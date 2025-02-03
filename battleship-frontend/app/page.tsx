@@ -7,7 +7,7 @@ import { Info } from 'lucide-react';
 
 const BattleshipBoard = () => {
   const [gameState, setGameState] = useState({
-    board: Array(6).fill().map(() => Array(6).fill(0)),
+    board: Array(6).map(() => Array(6).fill(0)),
     ships: {},
     moves: []
   });
@@ -133,8 +133,8 @@ const BattleshipBoard = () => {
             </div>
             
             <div className="grid grid-cols-6 w-full h-full relative z-10" style={{ gridGap: 0 }}>
-              {Array(6).fill().map((_, x) => (
-                Array(6).fill().map((_, y) => (
+              {Array(6).map((_, x) => (
+                Array(6).map((_, y) => (
                   <div
                     key={`${x}-${y}`}
                     className={`${getCellColor(x, y)} transition-colors backdrop-blur-sm border border-black/30`}
