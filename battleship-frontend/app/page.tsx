@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,12 @@ const BattleshipGame = () => {
   const [selectedCell, setSelectedCell] = useState(null);
   const [hoveredCell, setHoveredCell] = useState(null);
   const [llmQuestionCount, setLlmQuestionCount] = useState(0);
+  
+  // Terrain state
+  const [mapSeed, setMapSeed] = useState(1);
+  const [terrainData, setTerrainData] = useState(null);
+  const [isClient, setIsClient] = useState(false);
+
   const [uncertaintyReduction, setUncertaintyReduction] = useState({
     user: {
       percentage: 0,
@@ -31,6 +37,7 @@ const BattleshipGame = () => {
       total: 20825
     }
   });
+
   const [answers, setAnswers] = useState({
     user: '',
     llm: ''
@@ -41,29 +48,68 @@ const BattleshipGame = () => {
   const llmTimerRef = useRef(null);
   const questionCountRef = useRef(null);
 
+  useEffect(() => {
+    setIsClient(true);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (llmTimerRef.current) clearInterval(llmTimerRef.current);
+      if (questionCountRef.current) clearInterval(questionCountRef.current);
+    };
+  }, []);
+
+  // Callback to receive terrain data from TacticalMap
+  const handleTerrainGenerated = useCallback((newTerrain) => {
+    setTerrainData(newTerrain);
+  }, []);
+
   const generateShipPositions = () => {
+    if (!terrainData) return [];
+    
     const newShips = [];
     const usedPositions = new Set();
+    const seaTiles = [];
 
-    // We'll place ships only on sea tiles
-    while (newShips.length < 3) {
-      const row = Math.floor(Math.random() * 6);
-      const col = Math.floor(Math.random() * 6);
-      const posKey = `${row}-${col}`;
+    // Find all sea tiles
+    for (let i = 0; i < 6; i++) {
+      for (let j = 0; j < 6; j++) {
+        const cellType = terrainData[i][j];
+      if (cellType === 'deepWater' || cellType === 'shallowWater') {
+          seaTiles.push({ row: i, col: j });
+        }
+      }
+    }
+
+    // Randomly select from available sea tiles
+    while (newShips.length < 3 && seaTiles.length > 0) {
+      const randomIndex = Math.floor(Math.random() * seaTiles.length);
+      const position = seaTiles[randomIndex];
+      const posKey = `${position.row}-${position.col}`;
       
       if (!usedPositions.has(posKey)) {
-        // In a real implementation, we'd check if this is a sea tile
-        newShips.push({ row, col });
+        newShips.push({ row: position.row, col: position.col });
         usedPositions.add(posKey);
       }
+      
+      // Remove the used position from available tiles
+      seaTiles.splice(randomIndex, 1);
     }
 
     return newShips;
   };
 
+  // Effect to place ships when terrain is ready
+  useEffect(() => {
+    if (terrainData && gameState === 'userQuestion') {
+      const newShips = generateShipPositions();
+      setShips(newShips);
+    }
+  }, [terrainData, gameState]);
+
   const startGame = () => {
-    const newShips = generateShipPositions();
-    setShips(newShips);
+    // Generate a stable random seed between 2 and 1000000
+    const newSeed = Math.floor(Math.random() * 999998) + 2;
+    setMapSeed(newSeed);
+    
     setGameState('userQuestion');
     setCountdown(30);
     setLlmQuestionCount(0);
@@ -142,14 +188,6 @@ const BattleshipGame = () => {
       setShowResults(false);
     }
   };
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (llmTimerRef.current) clearInterval(llmTimerRef.current);
-      if (questionCountRef.current) clearInterval(questionCountRef.current);
-    };
-  }, []);
 
   const renderUncertaintyBar = (stats, color, animate = false) => (
     <div className="space-y-2">
@@ -307,6 +345,8 @@ const BattleshipGame = () => {
                     setHoveredCell(y * 6 + x);
                   }}
                   selectedCell={selectedCell}
+                  seed={mapSeed}
+                  onTerrainGenerated={handleTerrainGenerated}
                 />
                 {gameState === 'results' && showResults && (
                   <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
