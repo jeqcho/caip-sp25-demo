@@ -70,3 +70,13 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+[role="alert"] svg {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+}
+
+[role="alert"] svg + div {
+  transform: none !important;
+}

@@ -51,7 +51,6 @@ const BattleshipBoard = () => {
     setLlmCountdown(30);
     setLlmGeneratedQuestions(0);
     
-    // Start LLM countdown
     if (llmTimerRef.current) clearInterval(llmTimerRef.current);
     llmTimerRef.current = setInterval(() => {
       setLlmCountdown(prev => {
@@ -63,13 +62,12 @@ const BattleshipBoard = () => {
       });
     }, 1000);
 
-    // Start question generation simulation
     if (questionCounterRef.current) clearInterval(questionCounterRef.current);
     questionCounterRef.current = setInterval(() => {
       setLlmGeneratedQuestions(prev => {
         if (prev >= 2000) {
           clearInterval(questionCounterRef.current);
-          clearInterval(llmTimerRef.current); // Stop the countdown early
+          clearInterval(llmTimerRef.current);
           setTimeout(showResults, 2000);
           return prev;
         }
@@ -130,7 +128,7 @@ const BattleshipBoard = () => {
       case 'userQuestion':
         return (
           <div className="space-y-4">
-            <Alert>
+            <Alert className="flex items-center gap-2">
               <Timer className="h-4 w-4" />
               <AlertDescription>
                 Time remaining: {countdown} seconds
@@ -158,20 +156,20 @@ const BattleshipBoard = () => {
         return (
           <div className="space-y-4">
             {userQuestion && (
-              <Alert>
+              <Alert className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
                 <AlertDescription>
                   Your question: "{userQuestion}"
                 </AlertDescription>
               </Alert>
             )}
-            <Alert>
+            <Alert className="flex items-center gap-2">
               <Timer className="h-4 w-4" />
               <AlertDescription>
                 LLM time remaining: {llmCountdown} seconds
               </AlertDescription>
             </Alert>
-            <Alert>
+            <Alert className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
               <AlertDescription>
                 {llmGeneratedQuestions < 2000 ? (
@@ -188,15 +186,15 @@ const BattleshipBoard = () => {
         return (
           <div className="space-y-4">
             {userQuestion && (
-              <Alert>
+              <Alert className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
                 <AlertDescription>
                   Your question: "{userQuestion}"
                 </AlertDescription>
               </Alert>
             )}
-            <Alert>
-              <Target className="h-4 w-4" />
+            <Alert className="flex items-start gap-2">
+              <Target className="h-4 w-4 mt-1" />
               <AlertDescription className="space-y-2">
                 <p className="font-medium">The LLM chose the following question after generating {llmGeneratedQuestions} possibilities:</p>
                 <p className="text-blue-600">{llmQuestion}</p>
