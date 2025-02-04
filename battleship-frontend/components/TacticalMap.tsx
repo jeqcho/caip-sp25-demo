@@ -1,7 +1,24 @@
-import React, { useMemo } from 'react';
+'use client';
+
+import React, { useMemo, useEffect } from 'react';
+
+type TerrainType = 'deepWater' | 'shallowWater' | 'beach' | 'lowland' | 'highland' | 'mountain';
+type TerrainGrid = TerrainType[][];
+
+type TerrainPattern = 'deepWaterPattern' | 'shallowWaterPattern' | 'beachPattern' | 'lowlandPattern' | 'highlandPattern' | 'mountainPattern';
+
+interface TacticalMapProps {
+  width?: number;
+  height?: number;
+  gridSize?: number;
+  onCellHover?: (x: number, y: number) => void;
+  selectedCell: { x: number; y: number } | null;
+  seed?: number;
+  onTerrainGenerated?: (terrain: TerrainGrid) => void;
+}
 
 // Initial terrain pattern for server-side rendering
-const initialTerrain = [
+const initialTerrain: TerrainGrid = [
   ['deepWater', 'deepWater', 'deepWater', 'shallowWater', 'lowland', 'lowland'],
   ['deepWater', 'deepWater', 'shallowWater', 'beach', 'lowland', 'shallowWater'],
   ['deepWater', 'shallowWater', 'beach', 'lowland', 'shallowWater', 'deepWater'],
@@ -11,7 +28,7 @@ const initialTerrain = [
 ];
 
 // Terrain types and their visual properties
-const terrainTypes = {
+const terrainTypes: Record<TerrainType, { name: string; color: string; pattern: TerrainPattern }> = {
   deepWater: { name: 'Deep Water', color: '#2C7AAF', pattern: 'deepWaterPattern' },
   shallowWater: { name: 'Shallow Water', color: '#5497C4', pattern: 'shallowWaterPattern' },
   beach: { name: 'Beach', color: '#D4C391', pattern: 'beachPattern' },
@@ -20,7 +37,7 @@ const terrainTypes = {
   mountain: { name: 'Mountain', color: '#505F44', pattern: 'mountainPattern' },
 };
 
-const TacticalMap = ({ 
+const TacticalMap: React.FC<TacticalMapProps> = ({ 
   width = 600, 
   height = 600, 
   gridSize = 6, 
@@ -30,21 +47,21 @@ const TacticalMap = ({
   onTerrainGenerated 
 }) => {
   // Enhanced terrain generation with multiple features
-  const terrainData = useMemo(() => {
+  const terrainData: TerrainGrid = useMemo(() => {
     if (seed === 1) {
       return initialTerrain;
     }
 
     // Improved seeded random function with better distribution
-    const seededRandom = (x, y, salt = 0) => {
+    const seededRandom = (x: number, y: number, salt: number = 0): number => {
       const dot = x * 12.9898 + y * 78.233 + seed * 43758.5453 + salt * 7919;
       return ((Math.sin(dot) * 43758.5453) % 1 + 1) / 2;
     };
 
     // Generate multiple layers of noise for different features
-    const generateNoiseLayer = (scale, salt) => {
-      return Array(gridSize).fill().map((_, i) => 
-        Array(gridSize).fill().map((_, j) => {
+    const generateNoiseLayer = (scale: number, salt: number): number[][] => {
+      return Array.from({ length: gridSize }, (_, i) => 
+        Array.from({ length: gridSize }, (_, j) => {
           const nx = i / gridSize * scale;
           const ny = j / gridSize * scale;
           return seededRandom(nx, ny, salt);
@@ -53,13 +70,13 @@ const TacticalMap = ({
     };
 
     // Generate continental structure
-    const continentalNoise = generateNoiseLayer(1, 1);
-    const mountainNoise = generateNoiseLayer(2, 2);
-    const detailNoise = generateNoiseLayer(4, 3);
+    const continentalNoise: number[][] = generateNoiseLayer(1, 1);
+    const mountainNoise: number[][] = generateNoiseLayer(2, 2);
+    const detailNoise: number[][] = generateNoiseLayer(4, 3);
 
     // Combine noise layers with different weights
-    const combinedTerrain = Array(gridSize).fill().map((_, i) =>
-      Array(gridSize).fill().map((_, j) => {
+    const combinedTerrain: number[][] = Array.from({ length: gridSize }, (_, i) =>
+      Array.from({ length: gridSize }, (_, j) => {
         const continental = continentalNoise[i][j] * 0.5;
         const mountain = mountainNoise[i][j] * 0.3;
         const detail = detailNoise[i][j] * 0.2;
@@ -68,7 +85,7 @@ const TacticalMap = ({
     );
 
     // Initial terrain type assignment with height-based biomes
-    const assignTerrainType = (height) => {
+    const assignTerrainType = (height: number): TerrainType => {
       if (height < 0.3) return 'deepWater';
       if (height < 0.4) return 'shallowWater';
       if (height < 0.45) return 'beach';
@@ -77,15 +94,15 @@ const TacticalMap = ({
       return 'mountain';
     };
 
-    let terrainType = combinedTerrain.map(row =>
+    let terrainType: TerrainGrid = combinedTerrain.map(row =>
       row.map(height => assignTerrainType(height))
     );
 
     // Apply coastal smoothing
-    const smoothCoastline = (terrain) => {
+    const smoothCoastline = (terrain: TerrainGrid): TerrainGrid => {
       return terrain.map((row, i) =>
         row.map((cell, j) => {
-          const neighbors = [];
+          const neighbors: TerrainType[] = [];
           for (let di = -1; di <= 1; di++) {
             for (let dj = -1; dj <= 1; dj++) {
               const ni = i + di;
@@ -118,8 +135,8 @@ const TacticalMap = ({
     }
 
     // Create islands and lakes
-    const createFeatures = (terrain) => {
-      const featureNoise = generateNoiseLayer(3, 4);
+    const createFeatures = (terrain: TerrainGrid): TerrainGrid => {
+      const featureNoise: number[][] = generateNoiseLayer(3, 4);
       
       return terrain.map((row, i) =>
         row.map((cell, j) => {
@@ -146,7 +163,7 @@ const TacticalMap = ({
   }, [seed, gridSize]);
 
   // Notify parent of terrain updates
-  React.useEffect(() => {
+  useEffect(() => {
     if (onTerrainGenerated) {
       onTerrainGenerated(terrainData);
     }
@@ -160,6 +177,13 @@ const TacticalMap = ({
     lowlandPattern: `lowland-${seed}`,
     highlandPattern: `highland-${seed}`,
     mountainPattern: `mountain-${seed}`,
+  } as const;
+
+  // Handle mouse over events with proper typing
+  const handleMouseOver = (x: number, y: number): void => {
+    if (onCellHover) {
+      onCellHover(x, y);
+    }
   };
 
   return (
@@ -254,7 +278,7 @@ const TacticalMap = ({
                 fill="none"
                 stroke="rgba(0,0,0,0.2)"
                 strokeWidth="0.5"
-                onMouseEnter={() => onCellHover && onCellHover(i, j)}
+                onMouseEnter={() => handleMouseOver(i, j)}
                 style={{ cursor: 'pointer' }}
               />
 
@@ -273,8 +297,8 @@ const TacticalMap = ({
               )}
 
               <text
-                x={x + cellWidth/2}
-                y={y + cellHeight/2}
+                x={x + cellWidth / 2}
+                y={y + cellHeight / 2}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 fill="rgba(0,0,0,0.5)"
