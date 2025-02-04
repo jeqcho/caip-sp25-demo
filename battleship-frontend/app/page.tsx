@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Timer, Brain, Target, MessageSquare, Ship, User, Bot, Anchor } from 'lucide-react';
+import { Timer, Brain, User, Bot, Anchor } from 'lucide-react';
 import TacticalMap from '@/components/TacticalMap';
 
 const BattleshipGame = () => {
