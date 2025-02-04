@@ -17,13 +17,11 @@ const BattleshipGame = () => {
   const [llmQuestion, setLlmQuestion] = useState('');
   const [ships, setShips] = useState([]);
   const [selectedCell, setSelectedCell] = useState(null);
-  const [hoveredCell, setHoveredCell] = useState(null);
   const [llmQuestionCount, setLlmQuestionCount] = useState(0);
   
   // Terrain state
   const [mapSeed, setMapSeed] = useState(1);
   const [terrainData, setTerrainData] = useState(null);
-  const [isClient, setIsClient] = useState(false);
 
   const [uncertaintyReduction, setUncertaintyReduction] = useState({
     user: {
@@ -49,11 +47,15 @@ const BattleshipGame = () => {
   const questionCountRef = useRef(null);
 
   useEffect(() => {
-    setIsClient(true);
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (llmTimerRef.current) clearInterval(llmTimerRef.current);
-      if (questionCountRef.current) clearInterval(questionCountRef.current);
+      // Store ref values in variables for cleanup
+      const timerRefValue = timerRef.current;
+      const llmTimerRefValue = llmTimerRef.current;
+      const questionCountRefValue = questionCountRef.current;
+      
+      if (timerRefValue) clearInterval(timerRefValue);
+      if (llmTimerRefValue) clearInterval(llmTimerRefValue);
+      if (questionCountRefValue) clearInterval(questionCountRefValue);
     };
   }, []);
 
@@ -62,7 +64,7 @@ const BattleshipGame = () => {
     setTerrainData(newTerrain);
   }, []);
 
-  const generateShipPositions = () => {
+  const generateShipPositions = useCallback(() => {
     if (!terrainData) return [];
     
     const newShips = [];
@@ -73,7 +75,7 @@ const BattleshipGame = () => {
     for (let i = 0; i < 6; i++) {
       for (let j = 0; j < 6; j++) {
         const cellType = terrainData[i][j];
-      if (cellType === 'deepWater' || cellType === 'shallowWater') {
+        if (cellType === 'deepWater' || cellType === 'shallowWater') {
           seaTiles.push({ row: i, col: j });
         }
       }
@@ -95,7 +97,7 @@ const BattleshipGame = () => {
     }
 
     return newShips;
-  };
+  }, [terrainData]);
 
   // Effect to place ships when terrain is ready
   useEffect(() => {
@@ -103,7 +105,7 @@ const BattleshipGame = () => {
       const newShips = generateShipPositions();
       setShips(newShips);
     }
-  }, [terrainData, gameState]);
+  }, [terrainData, gameState, generateShipPositions]);
 
   const startGame = () => {
     // Generate a stable random seed between 2 and 1000000
@@ -189,7 +191,7 @@ const BattleshipGame = () => {
     }
   };
 
-  const renderUncertaintyBar = (stats, color, animate = false) => (
+  const renderUncertaintyBar = (stats, color) => (
     <div className="space-y-2">
       <div className="flex justify-between text-sm text-gray-600">
         <span>Scenarios eliminated: {stats.eliminated.toLocaleString()}</span>
@@ -215,7 +217,7 @@ const BattleshipGame = () => {
                 <p>Goal: Find three hidden ships on the tactical map</p>
                 <p>1. Ask questions that can be answered with one word</p>
                 <p>2. You have 30 seconds to ask your question</p>
-                <p>3. We'll compare how well each question helps find the ships</p>
+                <p>3. We&apos;ll compare how well each question helps find the ships</p>
               </div>
             </div>
             <Button 
@@ -264,7 +266,7 @@ const BattleshipGame = () => {
                 <div className="flex items-center gap-2 w-full">
                   <User className="h-4 w-4" />
                   <AlertDescription className="flex-1">
-                    Your question: "{userQuestion}"
+                    Your question: &quot;{userQuestion}&quot;
                   </AlertDescription>
                 </div>
                 {showResults && <AlertDescription>Answer: {answers.user}</AlertDescription>}
@@ -287,7 +289,7 @@ const BattleshipGame = () => {
                   <div className="flex items-center gap-2 w-full">
                     <Bot className="h-4 w-4" />
                     <AlertDescription className="flex-1">
-                      LLM's question: "{llmQuestion}"
+                      LLM&apos;s question: &quot;{llmQuestion}&quot;
                     </AlertDescription>
                   </div>
                   {showResults && <AlertDescription>Answer: {answers.llm}</AlertDescription>}
@@ -342,7 +344,6 @@ const BattleshipGame = () => {
                   gridSize={6}
                   onCellHover={(x, y) => {
                     setSelectedCell({ x, y });
-                    setHoveredCell(y * 6 + x);
                   }}
                   selectedCell={selectedCell}
                   seed={mapSeed}
