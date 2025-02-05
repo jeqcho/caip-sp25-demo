@@ -39,21 +39,14 @@ const BattleshipGame = () => {
   const llmTimerRef = useRef(null);
 
   const generateShipPositions = () => {
-    const newShips = [];
-    const usedPositions = new Set();
-
-    while (newShips.length < 3) {
-      const row = Math.floor(Math.random() * 6);
-      const col = Math.floor(Math.random() * 6);
-      const posKey = `${row}-${col}`;
-      
-      if (!usedPositions.has(posKey)) {
-        newShips.push({ row, col });
-        usedPositions.add(posKey);
-      }
-    }
-
-    return newShips;
+    // Fixed positions: B2, C3, D5
+    // Note: Arrays are 0-based, so we subtract 1 from the numbers
+    // Letters A-F correspond to columns 0-5
+    return [
+      { row: 1, col: 1 }, // B2
+      { row: 2, col: 2 }, // C3
+      { row: 4, col: 3 }, // D5
+    ];
   };
 
   const startGame = () => {

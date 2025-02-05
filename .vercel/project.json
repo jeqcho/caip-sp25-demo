@@ -1,0 +1,15 @@
+{
+  "projectId": "prj_vpWRzoaoBEEjqZK5xk7cUMPEzJpP",
+  "orgId": "team_11sdZgPzVt3O9RdrSuW3ifHy",
+  "settings": {
+    "createdAt": 1738593395387,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": "battleship-frontend",
+    "directoryListing": false,
+    "nodeVersion": "22.x"
+  }
+}
