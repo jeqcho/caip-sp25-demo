@@ -6,12 +6,43 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Timer, Ship, User, Bot, Brain, Target } from 'lucide-react';
+import { Timer, Ship, User, Bot, Brain, Target, CheckCircle2, XCircle } from 'lucide-react';
 import _ from 'lodash';
 
 // Types
 type GameState = 'initial' | 'userQuestion' | 'llmThinking' | 'results' | 'finalGuess' | 'gameOver';
 type Position = { row: number; col: number };
+
+const LLM_EXPLANATIONS = [
+  {
+    question: "How many ships are in the top half of the board?",
+    purpose: "To identify asymmetrical ship placement. Players often cluster ships in certain regions.",
+    strategy: "Dividing board into zones helps narrow search area."
+  },
+  {
+    question: "How many tiles are occupied by ships in total?",
+    purpose: "To verify game rules and ship configurations.",
+    strategy: "Knowing total tiles constrains possible ship arrangements."
+  },
+  {
+    question: "Are there more ships on odd-numbered rows than even rows?",
+    purpose: "To exploit parity-based patterns in ship placement.",
+    strategy: "Players may subconsciously favor certain row patterns."
+  },
+  {
+    question: "How many ships are horizontal?",
+    purpose: "Orientation affects adjacent guessing strategies.",
+    strategy: "Horizontal ships occupy columns, vertical span rows."
+  },
+  {
+    question: "Where is the bottom right part of the third ship?",
+    purpose: "To pinpoint specific ship endpoints.",
+    strategy: "Tracking endpoints enables systematic board clearing."
+  }
+];
+
+
+
 
 const BattleshipGame = () => {
   const [gameState, setGameState] = useState<GameState>('initial');
@@ -75,16 +106,43 @@ const BattleshipGame = () => {
     }
   };
 
+  const USER_RESPONSES: Question[] = [
+    {
+      question: "", // Will be filled with user's actual question
+      answer: "No",
+      uncertaintyReduction: { percentage: 7.2, eliminated: 2977 }
+    },
+    {
+      question: "",
+      answer: "Yes",
+      uncertaintyReduction: { percentage: 14.8, eliminated: 4289 }
+    },
+    {
+      question: "",
+      answer: "Water",
+      uncertaintyReduction: { percentage: 20.6, eliminated: 7498 }
+    },
+    {
+      question: "",
+      answer: "2",
+      uncertaintyReduction: { percentage: 12.3, eliminated: 5790 }
+    },
+    {
+      question: "",
+      answer: "2",
+      uncertaintyReduction: { percentage: 11, eliminated: 6144 }
+    }
+  ];
+
   const handleQuestionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!userQuestion.trim()) return;
 
     clearInterval(timerRef.current!);
 
-    const userResult: Question = {
-      question: userQuestion,
-      answer: "No",
-      uncertaintyReduction: { percentage: 23.4, eliminated: 4873 }
+    const userResult = {
+      ...USER_RESPONSES[currentRound - 1],
+      question: userQuestion
     };
 
     setQuestionHistory(prev => ({
@@ -107,7 +165,7 @@ const BattleshipGame = () => {
           setTimeout(updateResults, 1000);
           return 90;
         }
-        return prev + Math.floor(Math.random() * 3) + 1;
+        return prev + Math.floor(Math.random() * 300) + 1;
       });
     }, 100);
   };
@@ -145,7 +203,17 @@ const BattleshipGame = () => {
 
   const checkGuesses = () => {
     const correctGuesses = userGuesses.filter(guess =>
-      ships.some(ship => ship.row === guess.row && ship.col === guess.col)
+      ships.some(ship => {
+        if (ship.horizontal) {
+          return guess.row === ship.row &&
+            guess.col >= ship.col &&
+            guess.col < ship.col + ship.length;
+        } else {
+          return guess.col === ship.col &&
+            guess.row >= ship.row &&
+            guess.row < ship.row + ship.length;
+        }
+      })
     ).length;
 
     setGameState('gameOver');
@@ -185,16 +253,21 @@ const BattleshipGame = () => {
             const isUserGuess = userGuesses.some(guess =>
               guess.row === row && guess.col === col);
             const isLLMGuess = gameState === 'gameOver' &&
-              ships.some(ship => ship.row === row && ship.col === col);
+              ([
+                { row: 1, col: 3 },
+                { row: 1, col: 2 },
+                { row: 3, col: 2 },
+                { row: 4, col: 2 },
+                { row: 4, col: 4 },
+                { row: 4, col: 5 }
+              ].some(pos => pos.row === row && pos.col === col));
 
             return (
               <div
                 key={index}
                 className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer
                   ${hoveredCell === index ? 'bg-white/20' : ''}
-                  ${gameState === 'finalGuess' ? 'hover:bg-blue-200/50' : ''}
-                  ${isUserGuess ? 'bg-blue-500/50' : ''}
-                  ${isLLMGuess ? 'bg-green-500/50' : ''}`}
+                  ${gameState === 'finalGuess' ? 'hover:bg-blue-200/50' : ''}`}
                 onMouseEnter={() => setHoveredCell(index)}
                 onMouseLeave={() => setHoveredCell(null)}
                 onClick={() => handleCellClick(row, col)}
@@ -204,10 +277,14 @@ const BattleshipGame = () => {
                     <Ship className="w-6 h-6 text-red-500" />
                   </div>
                 )}
-                {hoveredCell === index && (
-                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 
-                    bg-black/75 text-white px-2 py-1 rounded text-sm">
-                    {String.fromCharCode(65 + col)}{row + 1}
+                {isUserGuess && (
+                  <div className="absolute top-1 left-1">
+                    <User className="w-4 h-4 text-blue-500" />
+                  </div>
+                )}
+                {isLLMGuess && (
+                  <div className="absolute top-1 right-1">
+                    <Bot className="w-4 h-4 text-green-500" />
                   </div>
                 )}
               </div>
@@ -341,11 +418,12 @@ const BattleshipGame = () => {
                       Information Gained
                     </h4>
                     <ProgressBar
-                      history={[{
-                        percentage: questionHistory.user[currentRound - 1]?.uncertaintyReduction.percentage || 0,
-                        eliminated: questionHistory.user[currentRound - 1]?.uncertaintyReduction.eliminated || 0
-                      }]}
+                      history={questionHistory.user.map(q => ({
+                        percentage: q.uncertaintyReduction.percentage,
+                        eliminated: q.uncertaintyReduction.eliminated
+                      }))}
                       color="bg-blue-500"
+
                       total={20825}
                     />
                   </div>
@@ -356,10 +434,10 @@ const BattleshipGame = () => {
                       DeepSeek's Information Gained
                     </h4>
                     <ProgressBar
-                      history={[{
-                        percentage: currentLLMQuestion?.percentage || 0,
-                        eliminated: currentLLMQuestion?.eliminated || 0
-                      }]}
+                      history={questionHistory.llm.slice(0, currentRound).map(q => ({
+                        percentage: q.percentage,
+                        eliminated: q.eliminated,
+                      }))}
                       color="bg-green-500"
                       total={20825}
                     />
@@ -392,10 +470,9 @@ const BattleshipGame = () => {
                     Information Gained
                   </h4>
                   <ProgressBar
-                    history={questionHistory.user.slice(0, currentRound).map(q => ({
+                    history={questionHistory.user.map(q => ({
                       percentage: q.uncertaintyReduction.percentage,
-                      eliminated: q.uncertaintyReduction.eliminated,
-                      percentage: q.uncertaintyReduction.percentage
+                      eliminated: q.uncertaintyReduction.eliminated
                     }))}
                     color="bg-blue-500"
                     total={20825}
@@ -451,7 +528,7 @@ const BattleshipGame = () => {
                 Your Question History
               </h4>
               <ProgressBar
-                history={questionHistory.user.map(q => ({
+                history={questionHistory.user.slice(0, TOTAL_ROUNDS).map(q => ({
                   percentage: q.uncertaintyReduction.percentage,
                   eliminated: q.uncertaintyReduction.eliminated
                 }))}
@@ -482,7 +559,17 @@ const BattleshipGame = () => {
 
       case 'gameOver':
         const correctGuesses = userGuesses.filter(guess =>
-          ships.some(ship => ship.row === guess.row && ship.col === guess.col)
+          ships.some(ship => {
+            if (ship.horizontal) {
+              return guess.row === ship.row &&
+                guess.col >= ship.col &&
+                guess.col < ship.col + ship.length;
+            } else {
+              return guess.col === ship.col &&
+                guess.row >= ship.row &&
+                guess.row < ship.row + ship.length;
+            }
+          })
         ).length;
 
         return (
@@ -490,6 +577,9 @@ const BattleshipGame = () => {
             <Alert variant="default" className="bg-blue-50">
               <AlertDescription className="text-lg font-semibold text-blue-800">
                 You found {correctGuesses} out of 6 ship tiles!
+              </AlertDescription>
+              <AlertDescription className="text-lg font-semibold text-blue-800">
+                DeepSeek found 5 out of 6 ship tiles!
               </AlertDescription>
             </Alert>
 
@@ -500,11 +590,29 @@ const BattleshipGame = () => {
                   Your Guesses:
                 </h4>
                 <div className="flex gap-2">
-                  {userGuesses.map((guess, index) => (
-                    <div key={index} className="bg-blue-100 px-3 py-1 rounded-full">
-                      {String.fromCharCode(65 + guess.col)}{guess.row + 1}
-                    </div>
-                  ))}
+                  {userGuesses.map((guess, index) => {
+                    const isCorrect = ships.some(ship => {
+                      if (ship.horizontal) {
+                        return ship.row === guess.row && guess.col >= ship.col && guess.col < ship.col + ship.length;
+                      } else {
+                        return ship.col === guess.col && guess.row >= ship.row && guess.row < ship.row + ship.length;
+                      }
+                    });
+                    return (
+                      <div key={index} className={`flex items-center gap-1 px-3 py-1 rounded-full ${isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
+                        <span>{String.fromCharCode(65 + guess.col)}{guess.row + 1}</span>
+                        {isCorrect ? (
+                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -514,11 +622,36 @@ const BattleshipGame = () => {
                   DeepSeek's Guesses:
                 </h4>
                 <div className="flex gap-2">
-                  {ships.map((ship, index) => (
-                    <div key={index} className="bg-green-100 px-3 py-1 rounded-full">
-                      {String.fromCharCode(65 + ship.col)}{ship.row + 1}
-                    </div>
-                  ))}
+                  {[
+                    { row: 1, col: 2 },
+                    { row: 1, col: 3 },
+                    { row: 3, col: 2 },
+                    { row: 4, col: 2 },
+                    { row: 4, col: 4 },
+                    { row: 4, col: 5 }
+                  ].map((guess, index) => {
+                    const isCorrect = ships.some(ship => {
+                      if (ship.horizontal) {
+                        return ship.row === guess.row && guess.col >= ship.col && guess.col < ship.col + ship.length;
+                      } else {
+                        return ship.col === guess.col && guess.row >= guess.row && guess.row < ship.row + ship.length;
+                      }
+                    });
+                    return (
+                      <div key={index} className={`flex items-center gap-1 px-3 py-1 rounded-full ${isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
+                        <span>{String.fromCharCode(65 + guess.col)}{guess.row + 1}</span>
+                        {isCorrect ? (
+                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -576,6 +709,22 @@ const BattleshipGame = () => {
               </div>
             </div>
 
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-700 flex items-center gap-2 mb-4">
+                <Brain className="h-4 w-4" />
+                DeepSeek's Strategy Explained
+              </h4>
+              <div className="space-y-4">
+                {LLM_EXPLANATIONS.map((item, index) => (
+                  <div key={index} className="p-3 bg-white rounded-lg">
+                    <p className="font-medium">Q{index + 1}: {item.question}</p>
+                    <p className="text-gray-600 mt-1">Purpose: {item.purpose}</p>
+                    <p className="text-gray-600">Strategy: {item.strategy}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <Button onClick={startGame} className="w-full bg-blue-600 hover:bg-blue-700">
               Play New Game
             </Button>
@@ -624,11 +773,11 @@ const TOTAL_ROUNDS = 5;
 const QUESTION_TIME = 30;
 const GRID_SIZE = 6;
 const LLM_QUESTIONS: LLMQuestion[] = [
-  { question: "How many ships are there in the top half of the board?", answer: "1", percentage: 35.2, eliminated: 7330 },
-  { question: "How many tiles are occupied by ships in total?", answer: "6", percentage: 29.8, eliminated: 6206 },
-  { question: "Are there more ships on the odd-numbered rows than the even rows?", answer: "No", percentage: 31.5, eliminated: 6560 },
-  { question: "How many ships are horizontal?", answer: "2", percentage: 38.9, eliminated: 8101 },
-  { question: "Where is the bottom right part of the third ship?", answer: "F5", percentage: 42.1, eliminated: 8767 }
+  { question: "How many ships are there in the top half of the board?", answer: "1", percentage: 13.7, eliminated: 7330 },
+  { question: "How many tiles are occupied by ships in total?", answer: "6", percentage: 11.5, eliminated: 6206 },
+  { question: "Are there more ships on the odd-numbered rows than the even rows?", answer: "No", percentage: 21.3, eliminated: 6560 },
+  { question: "How many ships are horizontal?", answer: "2", percentage: 15.4, eliminated: 8101 },
+  { question: "Where is the bottom right part of the third ship?", answer: "F5", percentage: 30.2, eliminated: 8767 }
 ];
 
 // Helper Components
@@ -683,29 +832,25 @@ const ProgressBar = ({
   history: { percentage: number; eliminated: number; }[];
   color: string;
   total: number;
-}) => {
-  const totalEliminated = _.sumBy(history, 'eliminated');
-
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm text-gray-600">
-        <span>Scenarios eliminated: {totalEliminated.toLocaleString()}</span>
-        <span>Total scenarios: {total.toLocaleString()}</span>
-      </div>
-      <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-        <div className="h-full flex">
-          {history.map((item, index) => (
-            <div
-              key={index}
-              className={`h-full ${color} transition-all duration-500`}
-              style={{
-                width: `${item.percentage}%`,
-                borderRight: index < history.length - 1 ? '2px solid rgba(255, 255, 255, 0.5)' : 'none'
-              }}
-            />
-          ))}
-        </div>
+}) => (
+  <div className="space-y-2">
+    <div className="flex justify-between text-sm text-gray-600">
+      <span>Knowledge gained: {_.sumBy(history, 'percentage').toFixed(1)}%</span>
+      <span>Remaining uncertainty: {(100 - _.sumBy(history, 'percentage')).toFixed(1)}%</span>
+    </div>
+    <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+      <div className="h-full flex">
+        {history.map((item, index) => (
+          <div
+            key={index}
+            className={`h-full ${color} transition-all duration-500`}
+            style={{
+              width: `${item.percentage}%`,
+              borderRight: index < history.length - 1 ? '2px solid rgba(255, 255, 255, 0.5)' : 'none'
+            }}
+          />
+        ))}
       </div>
     </div>
-  );
-};
+  </div>
+);
