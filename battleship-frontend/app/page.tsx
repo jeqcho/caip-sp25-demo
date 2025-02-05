@@ -6,57 +6,50 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Timer, Brain, Target, MessageSquare, Ship, User, Bot } from 'lucide-react';
+import { Timer, Ship, User, Bot, Brain, Target } from 'lucide-react';
+import _ from 'lodash';
+
+// Types
+type GameState = 'initial' | 'userQuestion' | 'llmThinking' | 'results' | 'finalGuess' | 'gameOver';
+type Position = { row: number; col: number };
 
 const BattleshipGame = () => {
-  // Game state management
-  const [gameState, setGameState] = useState('initial');
-  const [showResults, setShowResults] = useState(false);
-  const [countdown, setCountdown] = useState(30);
+  const [gameState, setGameState] = useState<GameState>('initial');
+  const [currentRound, setCurrentRound] = useState(1);
+  const [countdown, setCountdown] = useState(QUESTION_TIME);
+  const [ships] = useState<Position[]>([
+    { row: 1, col: 1, length: 2, horizontal: true },
+    { row: 3, col: 2, length: 2, horizontal: false },
+    { row: 4, col: 4, length: 2, horizontal: true },
+  ]);
+
+  const [hoveredCell, setHoveredCell] = useState<number | null>(null);
+  const [llmQuestionsGenerated, setLlmQuestionsGenerated] = useState(0);
+  const [userGuesses, setUserGuesses] = useState<Position[]>([]);
   const [userQuestion, setUserQuestion] = useState('');
-  const [llmQuestion, setLlmQuestion] = useState('');
-  const [ships, setShips] = useState([]);
-  const [uncertaintyReduction, setUncertaintyReduction] = useState({
-    user: {
-      percentage: 0,
-      eliminated: 0,
-      total: 20825 // Mathematical: C(36,3) = 36!/(3!(36-3)!) = 7140
-    },
-    llm: {
-      percentage: 0,
-      eliminated: 0,
-      total: 20825
-    }
-  });
-  const [answers, setAnswers] = useState({
-    user: '',
-    llm: ''
-  });
-  const [hoveredCell, setHoveredCell] = useState(null);
+  const [currentLLMQuestion, setCurrentLLMQuestion] = useState<LLMQuestion | null>(null);
+  const [questionHistory, setQuestionHistory] = useState<{
+    user: Question[];
+    llm: LLMQuestion[];
+  }>({ user: [], llm: [] });
 
-  // Refs for timer management
-  const timerRef = useRef(null);
-  const llmTimerRef = useRef(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const counterRef = useRef<NodeJS.Timeout | null>(null);
 
-  const generateShipPositions = () => {
-    // Fixed positions: B2, C3, D5
-    // Note: Arrays are 0-based, so we subtract 1 from the numbers
-    // Letters A-F correspond to columns 0-5
-    return [
-      { row: 1, col: 1 }, // B2
-      { row: 2, col: 2 }, // C3
-      { row: 4, col: 3 }, // D5
-    ];
-  };
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (counterRef.current) clearInterval(counterRef.current);
+    };
+  }, []);
 
   const startGame = () => {
-    const newShips = generateShipPositions();
-    setShips(newShips);
     setGameState('userQuestion');
-    setCountdown(30);
+    setCurrentRound(1);
+    setCountdown(QUESTION_TIME);
+    setQuestionHistory({ user: [], llm: [] });
+    setUserGuesses([]);
     startCountdown();
-    // Start LLM "thinking" in background
-    startLlmThinking();
   };
 
   const startCountdown = () => {
@@ -64,7 +57,8 @@ const BattleshipGame = () => {
     timerRef.current = setInterval(() => {
       setCountdown(prev => {
         if (prev <= 1) {
-          clearInterval(timerRef.current);
+          clearInterval(timerRef.current!);
+          if (gameState === 'userQuestion') handleTimeUp();
           return 0;
         }
         return prev - 1;
@@ -72,156 +66,175 @@ const BattleshipGame = () => {
     }, 1000);
   };
 
-  const startLlmThinking = () => {
-    // Simulate LLM thinking in background
-    setTimeout(() => {
-      setLlmQuestion("Are there any ships in row 1?");
-      setUncertaintyReduction(prev => ({
-        ...prev,
-        llm: {
-          percentage: 45.8,
-          eliminated: 9538,
-          total: prev.llm.total
-        }
-      }));
-      setAnswers(prev => ({
-        ...prev,
-        llm: "Yes"
-      }));
-    }, 5000); // Simulate 5-second API call
-  };
-
-  const handleQuestionSubmit = (e) => {
-    e.preventDefault();
+  const handleTimeUp = () => {
     if (userQuestion.trim()) {
-      clearInterval(timerRef.current);
-      // Simulate calculating uncertainty reduction
-      setUncertaintyReduction(prev => ({
-        ...prev,
-        user: {
-          percentage: 23.4,
-          eliminated: 4873,
-          total: prev.user.total
-        }
-      }));
-      setAnswers(prev => ({
-        ...prev,
-        user: "No"
-      }));
-      setGameState('results');
-      setShowResults(false);
+      handleQuestionSubmit(new Event('submit') as any);
+    } else {
+      setUserQuestion("Are there any ships in this area?");
+      handleQuestionSubmit(new Event('submit') as any);
     }
   };
 
-  // Cleanup timers on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      if (llmTimerRef.current) clearInterval(llmTimerRef.current);
+  const handleQuestionSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userQuestion.trim()) return;
+
+    clearInterval(timerRef.current!);
+
+    const userResult: Question = {
+      question: userQuestion,
+      answer: "No",
+      uncertaintyReduction: { percentage: 23.4, eliminated: 4873 }
     };
-  }, []);
 
-  // Game board rendering
-  const renderGameBoard = () => {
-    return (
-      <div className="relative w-96 h-96">
-        {/* Map background */}
-        <div className="absolute inset-0">
-          <Image
-            src="/maps/taiwan.png"
-            alt="Taiwan Map"
-            width={500}
-            height={500}
-            className="w-full h-full object-cover opacity-50"
-          />
-        </div>
-        
-        {/* Grid overlay */}
-        <div className="absolute inset-0">
-          {/* Column labels (A-F) */}
-          <div className="absolute -top-8 left-0 right-0 grid grid-cols-6 w-full">
-            {['A', 'B', 'C', 'D', 'E', 'F'].map((letter) => (
-              <div key={letter} className="flex justify-center font-semibold text-gray-700">
-                {letter}
-              </div>
-            ))}
-          </div>
-          
-          {/* Row labels (1-6) */}
-          <div className="absolute -left-8 top-0 h-full flex flex-col">
-            {[1, 2, 3, 4, 5, 6].map((number) => (
-              <div key={number} className="flex items-center justify-end h-1/6 pr-2 font-semibold text-gray-700">
-                {number}
-              </div>
-            ))}
-          </div>
+    setQuestionHistory(prev => ({
+      ...prev,
+      user: [...prev.user, userResult]
+    }));
 
-          {/* Grid cells */}
-          <div className="h-full grid grid-cols-6 grid-rows-6">
-            {Array(36).fill(null).map((_, index) => {
-              const row = Math.floor(index / 6);
-              const col = index % 6;
-              const hasShip = gameState === 'results' && showResults && ships.some(ship => ship.row === row && ship.col === col);
-              
-              return (
-                <div
-                  key={index}
-                  className={`border border-gray-600/50 transition-colors duration-200 relative
-                    ${hoveredCell === index ? 'bg-white/20' : ''}`}
-                  onMouseEnter={() => setHoveredCell(index)}
-                  onMouseLeave={() => setHoveredCell(null)}
-                >
-                  {hasShip && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Ship className="w-6 h-6 text-red-500" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
+    simulateLLMThinking();
   };
 
-  const renderUncertaintyBar = (stats, color, animate = false) => (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm text-gray-600">
-        <span>Scenarios eliminated: {stats.eliminated.toLocaleString()}</span>
-        <span>Total scenarios: {stats.total.toLocaleString()}</span>
-      </div>
-      <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-        <div 
-          className={`h-full ${color}`}
-          style={{ 
-            width: animate ? '0%' : `${stats.percentage}%`,
-            transition: animate ? 'width 1s ease-out' : 'none'
-          }}
+  const simulateLLMThinking = () => {
+    setGameState('llmThinking');
+    setLlmQuestionsGenerated(0);
+
+    if (counterRef.current) clearInterval(counterRef.current);
+    counterRef.current = setInterval(() => {
+      setLlmQuestionsGenerated(prev => {
+        if (prev >= 90) {
+          clearInterval(counterRef.current!);
+          setTimeout(updateResults, 1000);
+          return 90;
+        }
+        return prev + Math.floor(Math.random() * 3) + 1;
+      });
+    }, 100);
+  };
+
+  const updateResults = () => {
+    const llmResponse = LLM_QUESTIONS[currentRound - 1];
+    setCurrentLLMQuestion(llmResponse);
+    setQuestionHistory(prev => ({
+      ...prev,
+      llm: [...prev.llm, llmResponse]
+    }));
+    setGameState('results');
+  };
+
+  const nextRound = () => {
+    setCurrentRound(prev => prev + 1);
+    setGameState('userQuestion');
+    setCountdown(QUESTION_TIME);
+    setUserQuestion('');
+    setLlmQuestionsGenerated(0);
+    setCurrentLLMQuestion(null);
+    startCountdown();
+  };
+
+  const handleCellClick = (row: number, col: number) => {
+    if (gameState !== 'finalGuess' || userGuesses.length >= 6) return;
+    const isDuplicate = userGuesses.some(
+      guess => guess.row === row && guess.col === col
+    );
+
+    if (!isDuplicate) {
+      setUserGuesses(prev => [...prev, { row, col }]);
+    }
+  };
+
+  const checkGuesses = () => {
+    const correctGuesses = userGuesses.filter(guess =>
+      ships.some(ship => ship.row === guess.row && ship.col === guess.col)
+    ).length;
+
+    setGameState('gameOver');
+  };
+
+  const renderGameBoard = () => (
+    <div className="relative w-96 h-96">
+      <div className="absolute inset-0">
+        <Image
+          src="/maps/taiwan.png"
+          alt="Taiwan Map"
+          width={500}
+          height={500}
+          className="w-full h-full object-cover opacity-50"
         />
+      </div>
+
+      <div className="absolute inset-0">
+        <GridLabels />
+
+        <div className="h-full grid grid-cols-6 grid-rows-6">
+          {[...Array(36)].map((_, index) => {
+            const row = Math.floor(index / 6);
+            const col = index % 6;
+            const hasShip = gameState === 'gameOver' &&
+              ships.some(ship => {
+                if (ship.horizontal) {
+                  return ship.row === row &&
+                    col >= ship.col &&
+                    col < ship.col + ship.length;
+                } else {
+                  return ship.col === col &&
+                    row >= ship.row &&
+                    row < ship.row + ship.length;
+                }
+              });
+            const isUserGuess = userGuesses.some(guess =>
+              guess.row === row && guess.col === col);
+            const isLLMGuess = gameState === 'gameOver' &&
+              ships.some(ship => ship.row === row && ship.col === col);
+
+            return (
+              <div
+                key={index}
+                className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer
+                  ${hoveredCell === index ? 'bg-white/20' : ''}
+                  ${gameState === 'finalGuess' ? 'hover:bg-blue-200/50' : ''}
+                  ${isUserGuess ? 'bg-blue-500/50' : ''}
+                  ${isLLMGuess ? 'bg-green-500/50' : ''}`}
+                onMouseEnter={() => setHoveredCell(index)}
+                onMouseLeave={() => setHoveredCell(null)}
+                onClick={() => handleCellClick(row, col)}
+              >
+                {hasShip && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Ship className="w-6 h-6 text-red-500" />
+                  </div>
+                )}
+                {hoveredCell === index && (
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 
+                    bg-black/75 text-white px-2 py-1 rounded text-sm">
+                    {String.fromCharCode(65 + col)}{row + 1}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 
-  // Game controls rendering based on state
   const renderGameControls = () => {
     switch (gameState) {
       case 'initial':
         return (
           <div className="space-y-6">
             <div className="bg-blue-50 p-6 rounded-lg space-y-4">
-              <h3 className="font-semibold text-lg text-blue-900">How to Play:</h3>
               <div className="space-y-3 text-blue-800">
-                <p>Goal: Find three hidden ships on the map</p>
-                <p>1. Ask questions that can be answered with one word</p>
-                <p>2. You have 30 seconds to ask your question</p>
-                <p>3. We'll compare how well each question helps find the ships</p>
+                <p>The year is 2030. In a high-tension scenario, the People's Republic of China has launched a naval operation near Taiwan, prompting a swift U.S. response. In the midst of these developments, three U.S. carrier groups have lost communications with their commanders and are now adrift at sea. You will assume the role of a decision-maker tasked with locating these ships using a network of sensors deployed in the area.</p>
+
+                <p>Your objective is to strategically determine their positions by posing five targeted questions – such as, "Is there a ship in quadrant A1?" or "Is there a ship in the first column?" – about the operational area. Competing against an adversary whose state-of-the-art AI is designed to exploit even minor data gaps and operational missteps, your task is to outpace and outmaneuver these advanced systems.</p>
+
+                <p>An AI system that inadvertently leaks information to an adversary, issues orders based on flawed reasoning, or is vulnerable to deception or cyber hijacking could have catastrophic consequences for U.S. security. By engaging with these scenarios in a controlled environment, you can better understand the critical challenges and trade-offs inherent in deploying AI in high-stakes national defense applications.</p>
+
+
               </div>
             </div>
-            <Button 
-              onClick={startGame}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
+            <Button onClick={startGame} className="w-full bg-blue-600 hover:bg-blue-700">
               Begin Game
             </Button>
           </div>
@@ -230,20 +243,24 @@ const BattleshipGame = () => {
       case 'userQuestion':
         return (
           <div className="space-y-4">
+            <Alert className="bg-blue-50">
+              <AlertDescription>Round {currentRound} of {TOTAL_ROUNDS}</AlertDescription>
+            </Alert>
+
             <Alert className="flex items-center gap-2">
               <Timer className="h-4 w-4" />
-              <AlertDescription>
-                Time remaining: {countdown} seconds
-              </AlertDescription>
+              <AlertDescription>Time remaining: {countdown} seconds</AlertDescription>
             </Alert>
+
             <form onSubmit={handleQuestionSubmit} className="space-y-4">
               <Input
                 value={userQuestion}
                 onChange={(e) => setUserQuestion(e.target.value)}
                 placeholder="Enter a question that can be answered in one word..."
                 className="w-full"
+                autoFocus
               />
-              <Button 
+              <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={!userQuestion.trim()}
@@ -251,83 +268,317 @@ const BattleshipGame = () => {
                 Submit Question
               </Button>
             </form>
+
+            {questionHistory.user.length > 0 && (
+              <div className="mt-6 space-y-4">
+                <h4 className="font-medium text-gray-700">Previous Questions:</h4>
+                <div className="space-y-2">
+                  {questionHistory.user.map((item, index) => (
+                    <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                      <div className="font-medium">Round {index + 1}:</div>
+                      <div>Q: "{item.question}"</div>
+                      <div>A: {item.answer}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'llmThinking':
+        return (
+          <div className="space-y-6">
+            <Alert className="bg-blue-50">
+              <div className="flex items-center gap-2">
+                <Bot className="h-4 w-4" />
+                <AlertDescription>DeepSeek is analyzing possible questions...</AlertDescription>
+              </div>
+            </Alert>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Questions analyzed:</span>
+                <span>{llmQuestionsGenerated.toLocaleString()}</span>
+              </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-200"
+                  style={{ width: `${Math.min((llmQuestionsGenerated / 90) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            <Alert>
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4" />
+                <AlertDescription>Your question: "{userQuestion}"</AlertDescription>
+              </div>
+            </Alert>
           </div>
         );
 
       case 'results':
-        const showLLMResults = llmQuestion && answers.llm;
-        
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <Alert className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 w-full">
-                  <User className="h-4 w-4" />
-                  <AlertDescription className="flex-1">
-                    Your question: "{userQuestion}"
-                  </AlertDescription>
-                </div>
-                {showResults && <AlertDescription>Answer: {answers.user}</AlertDescription>}
-                {showResults && (
-                  <>
-                    {renderUncertaintyBar(uncertaintyReduction.user, 'bg-blue-500', !showResults)}
-                  </>
-                )}
-              </Alert>
-            </div>
-
-            {showLLMResults ? (
-              <div className="space-y-4">
-                <Alert className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2 w-full">
-                    <Bot className="h-4 w-4" />
-                    <AlertDescription className="flex-1">
-                      LLM's question: "{llmQuestion}"
-                    </AlertDescription>
-                  </div>
-                  {showResults && <AlertDescription>Answer: {answers.llm}</AlertDescription>}
-                  {showResults && (
-                    <>
-                      {renderUncertaintyBar(uncertaintyReduction.llm, 'bg-green-500', !showResults)}
-                    </>
-                  )}
-                </Alert>
-              </div>
-            ) : (
-              <Alert className="flex items-center gap-2">
-                <Bot className="h-4 w-4" />
-                <AlertDescription>
-                  LLM is analyzing the board...
+        if (currentRound === TOTAL_ROUNDS) {
+          return (
+            <div className="space-y-6">
+              <Alert variant="default" className="bg-blue-50">
+                <AlertDescription className="text-lg font-semibold text-blue-800">
+                  Questioning phase complete! Now make your guesses for the ship locations.
                 </AlertDescription>
               </Alert>
-            )}
 
-            {showLLMResults && !showResults && (
-              <Button 
-                onClick={() => {
-                  setShowResults(true);
-                  // Trigger animation after a short delay
-                  setTimeout(() => {
-                    const bars = document.querySelectorAll('.uncertainty-bar');
-                    bars.forEach(bar => {
-                      bar.style.width = bar.dataset.targetWidth;
-                    });
-                  }, 100);
-                }}
+              <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+                <QuestionDisplay
+                  user={{ question: userQuestion, answer: questionHistory.user[currentRound - 1]?.answer }}
+                  llm={{ question: currentLLMQuestion?.question || '' }}
+                />
+
+                <div className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Information Gained
+                    </h4>
+                    <ProgressBar
+                      history={[{
+                        percentage: questionHistory.user[currentRound - 1]?.uncertaintyReduction.percentage || 0,
+                        eliminated: questionHistory.user[currentRound - 1]?.uncertaintyReduction.eliminated || 0
+                      }]}
+                      color="bg-blue-500"
+                      total={20825}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                      <Bot className="h-4 w-4" />
+                      DeepSeek's Information Gained
+                    </h4>
+                    <ProgressBar
+                      history={[{
+                        percentage: currentLLMQuestion?.percentage || 0,
+                        eliminated: currentLLMQuestion?.eliminated || 0
+                      }]}
+                      color="bg-green-500"
+                      total={20825}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => setGameState('finalGuess')}
                 className="w-full bg-blue-600 hover:bg-blue-700"
               >
-                Reveal Results
+                Make Your Final Guesses
               </Button>
-            )}
+            </div>
+          );
+        }
 
-            {showResults && (
-              <Button 
-                onClick={startGame}
+        return (
+          <div className="space-y-6">
+            <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+              <QuestionDisplay
+                user={{ question: userQuestion, answer: questionHistory.user[currentRound - 1]?.answer }}
+                llm={{ question: currentLLMQuestion?.question || '' }}
+              />
+
+              <div className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Information Gained
+                  </h4>
+                  <ProgressBar
+                    history={questionHistory.user.slice(0, currentRound).map(q => ({
+                      percentage: q.uncertaintyReduction.percentage,
+                      eliminated: q.uncertaintyReduction.eliminated,
+                      percentage: q.uncertaintyReduction.percentage
+                    }))}
+                    color="bg-blue-500"
+                    total={20825}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                    <Bot className="h-4 w-4" />
+                    DeepSeek's Information Gained
+                  </h4>
+                  <ProgressBar
+                    history={questionHistory.llm.slice(0, currentRound).map(q => ({
+                      percentage: q.percentage,
+                      eliminated: q.eliminated
+                    }))}
+                    color="bg-green-500"
+                    total={20825}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Button onClick={nextRound} className="w-full bg-blue-600 hover:bg-blue-700">
+              Next Round
+            </Button>
+          </div>
+        );
+
+      case 'finalGuess':
+        return (
+          <div className="space-y-6">
+            <Alert variant="default" className="bg-blue-50">
+              <AlertDescription className="text-lg font-semibold text-blue-800">
+                Select 6 tiles where you think the ships are located ({6 - userGuesses.length} remaining)
+              </AlertDescription>
+            </Alert>
+
+            <div className="bg-white rounded-lg border p-4 space-y-4">
+              <h4 className="font-medium text-gray-700">Your guesses:</h4>
+              <div className="flex gap-2">
+                {userGuesses.map((guess, index) => (
+                  <div key={index} className="bg-blue-100 px-3 py-1 rounded-full">
+                    {String.fromCharCode(65 + guess.col)}{guess.row + 1}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 space-y-4">
+              <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                <User className="h-4 w-4" />
+                Your Question History
+              </h4>
+              <ProgressBar
+                history={questionHistory.user.map(q => ({
+                  percentage: q.uncertaintyReduction.percentage,
+                  eliminated: q.uncertaintyReduction.eliminated
+                }))}
+                color="bg-blue-500"
+                total={20825}
+              />
+              <div className="mt-4 space-y-3 divide-y divide-gray-200">
+                {questionHistory.user.map((item, index) => (
+                  <div key={index} className="pt-3 first:pt-0">
+                    <div className="font-medium text-gray-600">Round {index + 1}:</div>
+                    <div className="mt-1">Q: "{item.question}"</div>
+                    <div className="text-gray-600">A: {item.answer}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {userGuesses.length === 6 && (
+              <Button
+                onClick={checkGuesses}
                 className="w-full bg-blue-600 hover:bg-blue-700"
               >
-                Play Again
+                Submit Guesses
               </Button>
             )}
+          </div>
+        );
+
+      case 'gameOver':
+        const correctGuesses = userGuesses.filter(guess =>
+          ships.some(ship => ship.row === guess.row && ship.col === guess.col)
+        ).length;
+
+        return (
+          <div className="space-y-6">
+            <Alert variant="default" className="bg-blue-50">
+              <AlertDescription className="text-lg font-semibold text-blue-800">
+                You found {correctGuesses} out of 6 ship tiles!
+              </AlertDescription>
+            </Alert>
+
+            <div className="bg-white rounded-lg border p-4 space-y-6">
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Your Guesses:
+                </h4>
+                <div className="flex gap-2">
+                  {userGuesses.map((guess, index) => (
+                    <div key={index} className="bg-blue-100 px-3 py-1 rounded-full">
+                      {String.fromCharCode(65 + guess.col)}{guess.row + 1}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                  <Bot className="h-4 w-4" />
+                  DeepSeek's Guesses:
+                </h4>
+                <div className="flex gap-2">
+                  {ships.map((ship, index) => (
+                    <div key={index} className="bg-green-100 px-3 py-1 rounded-full">
+                      {String.fromCharCode(65 + ship.col)}{ship.row + 1}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 space-y-6">
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-700">Question-Answer History</h4>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <h5 className="font-medium text-gray-600">Your Progress</h5>
+                  </div>
+                  <ProgressBar
+                    history={questionHistory.user.map(q => ({
+                      percentage: q.uncertaintyReduction.percentage,
+                      eliminated: q.uncertaintyReduction.eliminated
+                    }))}
+                    color="bg-blue-500"
+                    total={20825}
+                  />
+                  <div className="ml-6 space-y-3 divide-y divide-gray-200">
+                    {questionHistory.user.map((item, index) => (
+                      <div key={index} className="pt-3 first:pt-0">
+                        <div className="font-medium text-gray-600">Round {index + 1}:</div>
+                        <div className="mt-1">Q: "{item.question}"</div>
+                        <div className="text-gray-600">A: {item.answer}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4 mt-8">
+                  <div className="flex items-center gap-2">
+                    <Bot className="h-4 w-4" />
+                    <h5 className="font-medium text-gray-600">DeepSeek's Progress</h5>
+                  </div>
+                  <ProgressBar
+                    history={_.uniqBy(questionHistory.llm, 'question').map(q => ({
+                      percentage: q.percentage,
+                      eliminated: q.eliminated
+                    }))}
+                    color="bg-green-500"
+                    total={20825}
+                  />
+                  <div className="ml-6 space-y-3 divide-y divide-gray-200">
+                    {_.uniqBy(questionHistory.llm, 'question').map((item, index) => (
+                      <div key={index} className="pt-3 first:pt-0">
+                        <div className="font-medium text-gray-600">Round {index + 1}:</div>
+                        <div className="mt-1">Q: "{item.question}"</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Button onClick={startGame} className="w-full bg-blue-600 hover:bg-blue-700">
+              Play New Game
+            </Button>
           </div>
         );
     }
@@ -337,8 +588,8 @@ const BattleshipGame = () => {
     <div className="flex items-center justify-center w-full min-h-screen bg-gray-50 p-6">
       <Card className="w-full max-w-6xl mx-auto">
         <CardHeader className="text-center pb-8">
-          <CardTitle className="text-3xl font-bold">Battleship Strategy Game</CardTitle>
-          <p className="text-gray-500 text-xl mt-2">You vs LLM: Who is the Better General?</p>
+          <CardTitle className="text-3xl font-bold">You vs DeepSeek: Finding American Battleships</CardTitle>
+          <p className="text-gray-500 text-xl mt-2">Can you outmaneuver AI in naval warfare?</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -356,3 +607,105 @@ const BattleshipGame = () => {
 };
 
 export default BattleshipGame;
+type Question = {
+  question: string;
+  answer: string;
+  uncertaintyReduction: { percentage: number; eliminated: number; };
+};
+type LLMQuestion = {
+  question: string;
+  answer: string;
+  percentage: number;
+  eliminated: number;
+};
+
+// Constants
+const TOTAL_ROUNDS = 5;
+const QUESTION_TIME = 30;
+const GRID_SIZE = 6;
+const LLM_QUESTIONS: LLMQuestion[] = [
+  { question: "How many ships are there in the top half of the board?", answer: "1", percentage: 35.2, eliminated: 7330 },
+  { question: "How many tiles are occupied by ships in total?", answer: "6", percentage: 29.8, eliminated: 6206 },
+  { question: "Are there more ships on the odd-numbered rows than the even rows?", answer: "No", percentage: 31.5, eliminated: 6560 },
+  { question: "How many ships are horizontal?", answer: "2", percentage: 38.9, eliminated: 8101 },
+  { question: "Where is the bottom right part of the third ship?", answer: "F5", percentage: 42.1, eliminated: 8767 }
+];
+
+// Helper Components
+const GridLabels = () => (
+  <>
+    <div className="absolute -top-8 left-0 right-0 grid grid-cols-6 w-full">
+      {[...Array(GRID_SIZE)].map((_, i) => (
+        <div key={i} className="flex justify-center font-semibold text-gray-700">
+          {String.fromCharCode(65 + i)}
+        </div>
+      ))}
+    </div>
+    <div className="absolute -left-8 top-0 h-full flex flex-col">
+      {[...Array(GRID_SIZE)].map((_, i) => (
+        <div key={i} className="flex items-center justify-end h-1/6 pr-2 font-semibold text-gray-700">
+          {i + 1}
+        </div>
+      ))}
+    </div>
+  </>
+);
+
+const QuestionDisplay = ({
+  user, llm, showAnswers = true
+}: {
+  user: { question: string; answer: string; };
+  llm: { question: string; };
+  showAnswers?: boolean;
+}) => (
+  <div className="space-y-4">
+    <Alert className="flex flex-col gap-2">
+      <div className="flex items-center gap-2 w-full">
+        <User className="h-4 w-4" />
+        <AlertDescription className="flex-1">Your question: "{user.question}"</AlertDescription>
+      </div>
+      {showAnswers && <AlertDescription>Answer: {user.answer}</AlertDescription>}
+    </Alert>
+    <Alert className="flex flex-col gap-2">
+      <div className="flex items-center gap-2 w-full">
+        <Bot className="h-4 w-4" />
+        <AlertDescription className="flex-1">DeepSeek's question: "{llm.question}"</AlertDescription>
+      </div>
+    </Alert>
+  </div>
+);
+
+const ProgressBar = ({
+  history = [],
+  color,
+  total
+}: {
+  history: { percentage: number; eliminated: number; }[];
+  color: string;
+  total: number;
+}) => {
+  const totalEliminated = _.sumBy(history, 'eliminated');
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm text-gray-600">
+        <span>Scenarios eliminated: {totalEliminated.toLocaleString()}</span>
+        <span>Total scenarios: {total.toLocaleString()}</span>
+      </div>
+      <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-full flex">
+          {history.map((item, index) => (
+            <div
+              key={index}
+              className={`h-full ${color} transition-all duration-500`}
+              style={{
+                width: `${item.percentage}%`,
+                borderRight: index < history.length - 1 ? '2px solid rgba(255, 255, 255, 0.5)' : 'none'
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
