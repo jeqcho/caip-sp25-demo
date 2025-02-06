@@ -110,27 +110,27 @@ const BattleshipGame = () => {
     {
       question: "", // Will be filled with user's actual question
       answer: "No",
-      uncertaintyReduction: { percentage: 7.2, eliminated: 2977 }
+      uncertaintyReduction: { percentage: 7.2 }
     },
     {
       question: "",
       answer: "Yes",
-      uncertaintyReduction: { percentage: 14.8, eliminated: 4289 }
+      uncertaintyReduction: { percentage: 14.8 }
     },
     {
       question: "",
       answer: "Water",
-      uncertaintyReduction: { percentage: 20.6, eliminated: 7498 }
+      uncertaintyReduction: { percentage: 20.6 }
     },
     {
       question: "",
       answer: "2",
-      uncertaintyReduction: { percentage: 12.3, eliminated: 5790 }
+      uncertaintyReduction: { percentage: 12.3 }
     },
     {
       question: "",
       answer: "2",
-      uncertaintyReduction: { percentage: 11, eliminated: 6144 }
+      uncertaintyReduction: { percentage: 11 }
     }
   ];
 
@@ -759,13 +759,17 @@ export default BattleshipGame;
 type Question = {
   question: string;
   answer: string;
-  uncertaintyReduction: { percentage: number; eliminated: number; };
+  uncertaintyReduction: { percentage: number; };
 };
 type LLMQuestion = {
   question: string;
   answer: string;
   percentage: number;
-  eliminated: number;
+};
+
+// Add a utility function to calculate eliminated scenarios
+const calculateEliminatedScenarios = (percentage: number, total: number) => {
+  return Math.round((percentage / 100) * total);
 };
 
 // Constants
@@ -773,11 +777,11 @@ const TOTAL_ROUNDS = 5;
 const QUESTION_TIME = 30;
 const GRID_SIZE = 6;
 const LLM_QUESTIONS: LLMQuestion[] = [
-  { question: "How many ships are there in the top half of the board?", answer: "1", percentage: 13.7, eliminated: 7330 },
-  { question: "How many tiles are occupied by ships in total?", answer: "6", percentage: 11.5, eliminated: 6206 },
-  { question: "Are there more ships on the odd-numbered rows than the even rows?", answer: "No", percentage: 21.3, eliminated: 6560 },
-  { question: "How many ships are horizontal?", answer: "2", percentage: 15.4, eliminated: 8101 },
-  { question: "Where is the bottom right part of the third ship?", answer: "F5", percentage: 30.2, eliminated: 8767 }
+  { question: "How many ships are there in the top half of the board?", answer: "1", percentage: 13.7 },
+  { question: "How many tiles are occupied by ships in total?", answer: "6", percentage: 11.5 },
+  { question: "Are there more ships on the odd-numbered rows than the even rows?", answer: "No", percentage: 21.3 },
+  { question: "How many ships are horizontal?", answer: "2", percentage: 15.4 },
+  { question: "Where is the bottom right part of the third ship?", answer: "F5", percentage: 30.2 }
 ];
 
 // Helper Components
@@ -829,7 +833,7 @@ const ProgressBar = ({
   color,
   total
 }: {
-  history: { percentage: number; eliminated: number; }[];
+  history: { percentage: number; }[];
   color: string;
   total: number;
 }) => (
@@ -840,16 +844,20 @@ const ProgressBar = ({
     </div>
     <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
       <div className="h-full flex">
-        {history.map((item, index) => (
-          <div
-            key={index}
-            className={`h-full ${color} transition-all duration-500`}
-            style={{
-              width: `${item.percentage}%`,
-              borderRight: index < history.length - 1 ? '2px solid rgba(255, 255, 255, 0.5)' : 'none'
-            }}
-          />
-        ))}
+        {history.map((item, index) => {
+          const eliminated = calculateEliminatedScenarios(item.percentage, total);
+          return (
+            <div
+              key={index}
+              className={`h-full ${color} transition-all duration-500`}
+              style={{
+                width: `${item.percentage}%`,
+                borderRight: index < history.length - 1 ? '2px solid rgba(255, 255, 255, 0.5)' : 'none'
+              }}
+              title={`Eliminated ${eliminated.toLocaleString()} scenarios`}
+            />
+          );
+        })}
       </div>
     </div>
   </div>
