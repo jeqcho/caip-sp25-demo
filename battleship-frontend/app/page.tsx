@@ -434,9 +434,9 @@ const BattleshipGame = () => {
                       DeepSeek's Information Gained
                     </h4>
                     <ProgressBar
-                      history={questionHistory.llm.slice(0, currentRound).map(q => ({
+                      history={_.uniqBy(questionHistory.llm, 'question').map(q => ({
                         percentage: q.percentage,
-                        eliminated: q.eliminated,
+                        eliminated: q.eliminated
                       }))}
                       color="bg-green-500"
                       total={20825}
@@ -485,7 +485,7 @@ const BattleshipGame = () => {
                     DeepSeek's Information Gained
                   </h4>
                   <ProgressBar
-                    history={questionHistory.llm.slice(0, currentRound).map(q => ({
+                    history={_.uniqBy(questionHistory.llm, 'question').map(q => ({
                       percentage: q.percentage,
                       eliminated: q.eliminated
                     }))}
@@ -827,7 +827,6 @@ const QuestionDisplay = ({
     </Alert>
   </div>
 );
-
 const ProgressBar = ({
   history = [],
   color,
@@ -839,8 +838,10 @@ const ProgressBar = ({
 }) => (
   <div className="space-y-2">
     <div className="flex justify-between text-sm text-gray-600">
-      <span>Knowledge gained: {_.sumBy(history, 'percentage').toFixed(1)}%</span>
-      <span>Remaining uncertainty: {(100 - _.sumBy(history, 'percentage')).toFixed(1)}%</span>
+      <span>Scenarios eliminated: {history.reduce((acc, item) =>
+        acc + calculateEliminatedScenarios(item.percentage, total), 0).toLocaleString()}</span>
+      <span>Remaining scenarios: {(total - history.reduce((acc, item) =>
+        acc + calculateEliminatedScenarios(item.percentage, total), 0)).toLocaleString()}</span>
     </div>
     <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
       <div className="h-full flex">
@@ -861,4 +862,4 @@ const ProgressBar = ({
       </div>
     </div>
   </div>
-);
+)
