@@ -10,7 +10,7 @@ import { Timer, Ship, User, Bot, Brain, Target, CheckCircle2, XCircle } from 'lu
 import _ from 'lodash';
 
 // Types
-type GameState = 'initial' | 'userQuestion' | 'llmThinking' | 'results' | 'finalGuess' | 'gameOver';
+type GameState = 'initial' | 'intro' | 'userQuestion' | 'llmThinking' | 'results' | 'finalGuess' | 'gameOver';
 type Position = { row: number; col: number };
 
 const LLM_EXPLANATIONS = [
@@ -73,6 +73,24 @@ const BattleshipGame = () => {
       if (counterRef.current) clearInterval(counterRef.current);
     };
   }, []);
+
+
+  const [currentInstructionIndex, setCurrentInstructionIndex] = useState(0);
+
+  const instructions = [
+    "The year is 2030. A high-stakes conflict is unfolding: China has launched a naval operation near Taiwan, and U.S. forces are responding. Three U.S. carrier groups have lost communication and are now adrift at sea.",
+    "You are a strategic commander tasked with locating these carrier groups. You can ask five questions, each of which must have a one word answer. For example, ‘Is there a ship in quadrant A1?’.",
+    "You'll compete against your adversary, DeepSeek, in reducing uncertainty and locating these vessels. We did not train DeepSeek to perform well on this task. Can you outpace and outmaneuver it?",
+    "Remember, you have 5 questions. Each question must be answerable in one word, with a time limit of 30 seconds. DeepSeek will do the same. There are three U.S. carrier groups, each forms a line of unknown length, and they must be in a tile entirely made out of water. This is similar to Battleship, the difference is that you move by asking questions."
+  ];
+
+  const goToIntro = () => {
+    setGameState('intro');
+  }
+
+  const resetGameState = () => {
+    setGameState('initial');
+  }
 
   const startGame = () => {
     setGameState('userQuestion');
@@ -295,6 +313,14 @@ const BattleshipGame = () => {
     </div>
   );
 
+  const handleInstructionNavigation = () => {
+    if (currentInstructionIndex < instructions.length - 1) {
+      setCurrentInstructionIndex(prev => prev + 1);
+    } else {
+      startGame();
+    }
+  };
+
   const renderGameControls = () => {
     switch (gameState) {
       case 'initial':
@@ -302,19 +328,42 @@ const BattleshipGame = () => {
           <div className="space-y-6">
             <div className="bg-blue-50 p-6 rounded-lg space-y-4">
               <div className="space-y-3 text-blue-800">
-                <p>The year is 2030. In a high-tension scenario, the People's Republic of China has launched a naval operation near Taiwan, prompting a swift U.S. response. In the midst of these developments, three U.S. carrier groups have lost communications with their commanders and are now adrift at sea. You will assume the role of a decision-maker tasked with locating these ships using a network of sensors deployed in the area.</p>
-
-                <p>Your objective is to strategically determine their positions by posing five targeted questions – such as, "Is there a ship in quadrant A1?" or "Is there a ship in the first column?" – about the operational area. Competing against an adversary whose state-of-the-art AI is designed to exploit even minor data gaps and operational missteps, your task is to outpace and outmaneuver these advanced systems.</p>
-
-                <p>An AI system that inadvertently leaks information to an adversary, issues orders based on flawed reasoning, or is vulnerable to deception or cyber hijacking could have catastrophic consequences for U.S. security. By engaging with these scenarios in a controlled environment, you can better understand the critical challenges and trade-offs inherent in deploying AI in high-stakes national defense applications.</p>
+                <p>In unfamiliar, high-stakes situations like war, can you make faster, better decisions than AI?</p>
 
 
               </div>
             </div>
-            <Button onClick={startGame} className="w-full bg-blue-600 hover:bg-blue-700">
-              Begin Game
+            <Button onClick={goToIntro} className="w-full bg-blue-600 hover:bg-blue-700">
+              Begin demo
             </Button>
           </div>
+        );
+
+      case 'intro':
+        return (
+          <div className="space-y-6">
+            <div className="bg-blue-50 p-6 rounded-lg space-y-4">
+              <div className="space-y-3 text-blue-800">
+                <p>{instructions[currentInstructionIndex]}</p>
+                <div className="space-x-2">
+                  {Array(instructions.length).fill(0).map((_, index) => (
+                    <span
+                      key={index}
+                      className={`inline-block w-2 h-2 rounded-full ${index === currentInstructionIndex ? 'bg-blue-600' : 'bg-blue-200'
+                        }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleInstructionNavigation}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {currentInstructionIndex === instructions.length - 1 ? 'Begin Game' : 'Next'}
+            </Button>
+          </div >
         );
 
       case 'userQuestion':
@@ -725,8 +774,8 @@ const BattleshipGame = () => {
               </div>
             </div>
 
-            <Button onClick={startGame} className="w-full bg-blue-600 hover:bg-blue-700">
-              Play New Game
+            <Button onClick={resetGameState} className="w-full bg-blue-600 hover:bg-blue-700">
+              Restart demo
             </Button>
           </div>
         );
@@ -736,12 +785,12 @@ const BattleshipGame = () => {
   return (
     <div className="flex items-center justify-center w-full min-h-screen bg-gray-50 p-6">
       <Card className="w-full max-w-6xl mx-auto">
-        <CardHeader className="text-center pb-8">
-          <CardTitle className="text-3xl font-bold">You vs DeepSeek: Finding American Battleships</CardTitle>
+        <CardHeader className="text-center pb-16">
+          <CardTitle className="text-3xl font-bold">You vs DeepSeek</CardTitle>
           <p className="text-gray-500 text-xl mt-2">Can you outmaneuver AI in naval warfare?</p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-16 px-16">
             <div className="flex justify-center items-start">
               {renderGameBoard()}
             </div>
