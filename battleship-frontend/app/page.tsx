@@ -46,7 +46,7 @@ function parseTileLetters(tileString: string): Position[] {
     const letterNum: number = letterMap[tile[0] as keyof typeof letterMap] || 0;
     // Parse the remaining part of the tile (e.g., "4" from "A4")
     const tileNumber = Number(tile.slice(1));
-    return { col: letterNum-1, row: tileNumber-1 };
+    return { col: letterNum - 1, row: tileNumber - 1 };
   });
 }
 
@@ -130,7 +130,7 @@ const BattleshipGame = () => {
     // choose a boardId between 1 and 10 inclusive
     const questionTileChoiceIndex = Math.floor(Math.random() * LLMQuestionTileChoice.length);
     const questionTileChoice = LLMQuestionTileChoice[questionTileChoiceIndex];
-    setBoardId(questionTileChoice.board-1);
+    setBoardId(questionTileChoice.board - 1);
     setCurrentBoard(boards[questionTileChoice.board - 1]);
 
     const llm_questions: LLMQuestion[] = [];
@@ -275,7 +275,8 @@ const BattleshipGame = () => {
     }
   };
 
-  const checkGuesses = () => {
+
+  const checkUserGuesses = () => {
     const correctGuesses = userGuesses.filter(guess =>
       ships.some(ship => {
         if (ship.horizontal) {
@@ -589,7 +590,7 @@ const BattleshipGame = () => {
           <div className="space-y-6">
             <Alert variant="default" className="bg-blue-50">
               <AlertDescription className="text-lg font-semibold text-blue-800">
-                Select 6 tiles where you think the ships are located ({6 - userGuesses.length} remaining)
+                Select tiles where you think the ships are located.
               </AlertDescription>
             </Alert>
 
@@ -620,9 +621,9 @@ const BattleshipGame = () => {
               </div>
             </div>
 
-            {userGuesses.length === 6 && (
+            {userGuesses.length > 0 && (
               <Button
-                onClick={checkGuesses}
+                onClick={checkUserGuesses}
                 className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 Submit Guesses
