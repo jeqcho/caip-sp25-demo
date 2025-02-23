@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Timer, Ship, User, Bot, Brain, Target, CheckCircle2, XCircle } from 'lucide-react';
 import _ from 'lodash';
 import boards from './boards/boards.json';
+import llm_guesses from './boards/llm-guesses.json';
 
 // Types
 type GameState = 'initial' | 'intro' | 'userQuestion' | 'llmThinking' | 'results' | 'finalGuess' | 'gameOver';
@@ -20,6 +21,7 @@ const BattleshipGame = () => {
   const [boardId, setBoardId] = useState(-1);
   const defaultBoard = Array.from({ length: 6 }, () => Array(6).fill('W'));
   const [currentBoard, setCurrentBoard] = useState(defaultBoard);
+  const [llmGuesses, setLLMGuesses] = useState<Position[]>([{}]);
   const [countdown, setCountdown] = useState(QUESTION_TIME);
   const [ships] = useState<Position[]>([
     { row: 1, col: 1, length: 2, horizontal: true },
@@ -72,6 +74,7 @@ const BattleshipGame = () => {
     const randomIndex = Math.floor(Math.random() * boards.length);
     setBoardId(randomIndex + 1); // using 1-indexed board id
     setCurrentBoard(boards[randomIndex]);
+    setLLMGuesses(llm_guesses[randomIndex]); // using 1-indexed board id
 
     setGameState('userQuestion');
     setCurrentRound(1);
@@ -220,19 +223,18 @@ const BattleshipGame = () => {
 
   const renderGameBoard = () => {
     if (!currentBoard) return null;
-
+  
     return (
       <div className="relative w-96 h-96 bg-blue-300">
         <div className="absolute inset-0">
           <GridLabels />
-
+  
           <div className="h-full grid grid-cols-6 grid-rows-6">
             {currentBoard.map((rowData, row) =>
               rowData.map((boardValue, col) => {
                 const index = row * 6 + col;
                 const isWater = boardValue === "W" || boardValue === "H";
-
-                // Determine cell background based on game state and board value.
+  
                 let cellBackground = "";
                 if (gameState === "gameOver") {
                   if (isWater) {
@@ -245,44 +247,36 @@ const BattleshipGame = () => {
                     cellBackground = "bg-red-200";
                   }
                 } else {
-                  // While game is in progress, water cells remain blue and others gray.
                   cellBackground = boardValue === "W" ? "bg-blue-300" : "bg-gray-400";
                 }
-
-                // Only show the ship icon on ship cells (R, B, or P) during gameOver.
-                const renderShipIcon =
-                  gameState === "gameOver" && !isWater;
-
-                // Determine ship icon color.
+  
+                const renderShipIcon = gameState === "gameOver" && !isWater;
+  
                 const shipColorClass =
                   boardValue === "B"
                     ? "text-blue-500"
                     : boardValue === "P"
-                      ? "text-purple-500"
-                      : boardValue === "R"
-                        ? "text-red-500"
-                        : "";
-
+                    ? "text-purple-500"
+                    : boardValue === "R"
+                    ? "text-red-500"
+                    : "";
+  
                 const isUserGuess = userGuesses.some(
                   (guess) => guess.row === row && guess.col === col
                 );
-
+  
                 const isLLMGuess =
                   gameState === "gameOver" &&
-                  ([
-                    { row: 1, col: 3 },
-                    { row: 1, col: 2 },
-                    { row: 3, col: 2 },
-                    { row: 4, col: 2 },
-                    { row: 4, col: 4 },
-                    { row: 4, col: 5 },
-                  ].some((pos) => pos.row === row && pos.col === col));
-
+                  llmGuesses.some(
+                    (guess) => guess.row === row && guess.col === col
+                  );
+  
                 return (
                   <div
                     key={index}
-                    className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer ${cellBackground} ${hoveredCell === index ? "bg-white/20" : ""
-                      } ${gameState === "finalGuess" ? "hover:bg-blue-200/50" : ""}`}
+                    className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer ${cellBackground} ${
+                      hoveredCell === index ? "bg-white/20" : ""
+                    } ${gameState === "finalGuess" ? "hover:bg-blue-200/50" : ""}`}
                     onMouseEnter={() => setHoveredCell(index)}
                     onMouseLeave={() => setHoveredCell(null)}
                     onClick={() => handleCellClick(row, col)}
@@ -302,7 +296,6 @@ const BattleshipGame = () => {
                         <Bot className="w-4 h-4 text-green-500" />
                       </div>
                     )}
-                    {/* Removed the boardValue text overlay */}
                   </div>
                 );
               })
