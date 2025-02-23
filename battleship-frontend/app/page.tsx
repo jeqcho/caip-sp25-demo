@@ -30,6 +30,26 @@ type LLMQuestion = {
 type ProgressBarHistory = { eig_adjusted: number; }[];
 type QKey = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Q5';
 
+function parseTileLetters(tileString: string): Position[] {
+  // Mapping letters to numbers (A becomes 1, B becomes 2, etc.)
+  const letterMap = {
+    A: 1,
+    B: 2,
+    C: 3,
+    D: 4,
+    E: 5,
+    F: 6,
+  };
+
+  return tileString.split(' ').map(tile => {
+    // Get the numeric value for the first letter
+    const letterNum: number = letterMap[tile[0] as keyof typeof letterMap] || 0;
+    // Parse the remaining part of the tile (e.g., "4" from "A4")
+    const tileNumber = Number(tile.slice(1));
+    return { col: letterNum-1, row: tileNumber-1 };
+  });
+}
+
 
 const BattleshipGame = () => {
   const [gameState, setGameState] = useState<GameState>('initial');
@@ -81,7 +101,7 @@ const BattleshipGame = () => {
   const calculateAdjustedEIGHistoryForRound = (roundId: number): ProgressBarHistory => {
     const adjusted_eigs = [];
     var cum_eig: number = 0;
-    for (const question of chosenLLMQuestions.slice(0,roundId)) {
+    for (const question of chosenLLMQuestions.slice(0, roundId)) {
       const adjusted_eig = (100 - cum_eig) * question.eig / 100;
       cum_eig += adjusted_eig;
       adjusted_eigs.push(adjusted_eig);
@@ -108,7 +128,7 @@ const BattleshipGame = () => {
     // choose a boardId between 1 and 10 inclusive
     const questionTileChoiceIndex = Math.floor(Math.random() * LLMQuestionTileChoice.length);
     const questionTileChoice = LLMQuestionTileChoice[questionTileChoiceIndex];
-    setBoardId(questionTileChoice.board);
+    setBoardId(questionTileChoice.board-1);
     setCurrentBoard(boards[questionTileChoice.board - 1]);
 
     const llm_questions: LLMQuestion[] = [];
@@ -123,7 +143,8 @@ const BattleshipGame = () => {
       llm_questions.push(question_wrapped)
     }
     setChosenLLMQuestions(llm_questions);
-    setLLMGuesses(llm_guesses[5]);
+    const tileChoice = questionTileChoice.tiles;
+    setLLMGuesses(parseTileLetters(tileChoice));
 
     setGameState('userQuestion');
     setCurrentRound(1);
@@ -501,7 +522,7 @@ const BattleshipGame = () => {
               <div className="bg-gray-50 p-4 rounded-lg space-y-4">
                 <QuestionDisplay
                   user={{ question: userQuestion, answer: questionHistory.user[currentRound - 1]?.answer }}
-                  llm={{ question: currentLLMQuestion?.question || '' }}
+                  llm={{ question: chosenLLMQuestions[currentRound - 1].question || '' }}
                 />
 
                 <div className="space-y-4 mt-4">
@@ -535,7 +556,7 @@ const BattleshipGame = () => {
             <div className="bg-gray-50 p-4 rounded-lg space-y-4">
               <QuestionDisplay
                 user={{ question: userQuestion, answer: questionHistory.user[currentRound - 1]?.answer }}
-                llm={{ question: currentLLMQuestion?.question || '' }}
+                llm={{ question: chosenLLMQuestions[currentRound - 1]?.question || '' }}
               />
 
               <div className="space-y-4 mt-4">
@@ -586,14 +607,6 @@ const BattleshipGame = () => {
                 <User className="h-4 w-4" />
                 Your Question History
               </h4>
-              <ProgressBar
-                history={questionHistory.user.slice(0, TOTAL_ROUNDS).map(q => ({
-                  percentage: q.uncertaintyReduction.percentage,
-                  eliminated: q.uncertaintyReduction.eliminated
-                }))}
-                color="bg-blue-500"
-                total={20825}
-              />
               <div className="mt-4 space-y-3 divide-y divide-gray-200">
                 {questionHistory.user.map((item, index) => (
                   <div key={index} className="pt-3 first:pt-0">
@@ -747,10 +760,11 @@ const BattleshipGame = () => {
                     total={20825}
                   />
                   <div className="ml-6 space-y-3 divide-y divide-gray-200">
-                    {_.uniqBy(questionHistory.llm, 'question').map((item, index) => (
+                    {chosenLLMQuestions.map((item, index) => (
                       <div key={index} className="pt-3 first:pt-0">
                         <div className="font-medium text-gray-600">Round {index + 1}:</div>
                         <div className="mt-1">Q: "{item.question}"</div>
+                        <div className="text-gray-600">A: {item.answer}</div>
                       </div>
                     ))}
                   </div>
@@ -797,7 +811,7 @@ const calculateEliminatedScenarios = (percentage: number, total: number) => {
 };
 
 // Constants
-const TOTAL_ROUNDS = 5;
+const TOTAL_ROUNDS = 1;
 const QUESTION_TIME = 30;
 const GRID_SIZE = 6;
 const LLM_QUESTIONS: LLMQuestion[] = [];
