@@ -78,14 +78,21 @@ const BattleshipGame = () => {
     // "Press the button below to begin. We will show a board to the left."
   ];
 
-  const getLLMHistoryForRound = (roundId: Number): ProgressBarHistory => {
+  const calculateAdjustedEIGHistoryForRound = (roundId: number): ProgressBarHistory => {
     const adjusted_eigs = [];
     var cum_eig: number = 0;
-    for (const question of chosenLLMQuestions) {
-      const adjusted_eig = (100 - cum_eig) * question.EIG / 100;
+    for (const question of chosenLLMQuestions.slice(0,roundId)) {
+      const adjusted_eig = (100 - cum_eig) * question.eig / 100;
+      cum_eig += adjusted_eig;
       adjusted_eigs.push(adjusted_eig);
     }
     return adjusted_eigs.map(eig => ({ eig_adjusted: eig }));
+  }
+
+  const calculateAdjustedEIGSumForRound = (roundId: number): number => {
+    const adjusted_eigs = calculateAdjustedEIGHistoryForRound(roundId);
+    const total_eig = adjusted_eigs.reduce((acc, item) => acc + item.eig_adjusted, 0);
+    return total_eig;
   }
 
 
@@ -504,11 +511,8 @@ const BattleshipGame = () => {
                       DeepSeek's Information Gained
                     </h4>
                     <ProgressBar
-                      history={chosenLLMQuestions.slice(0, currentRound + 1).map(q => ({
-                        eig_adjusted: q.EIG
-                      })),
-                    
-                    }
+                      history={calculateAdjustedEIGHistoryForRound(currentRound)}
+                      eig_adjusted_sum={calculateAdjustedEIGSumForRound(currentRound)}
                       color="bg-green-500"
                       total={20825}
                     />
@@ -535,31 +539,15 @@ const BattleshipGame = () => {
               />
 
               <div className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Information Gained
-                  </h4>
-                  <ProgressBar
-                    history={questionHistory.user.map(q => ({
-                      percentage: q.uncertaintyReduction.percentage,
-                      eliminated: q.uncertaintyReduction.eliminated
-                    }))}
-                    color="bg-blue-500"
-                    total={20825}
-                  />
-                </div>
 
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
                     <Bot className="h-4 w-4" />
-                    DeepSeek's Information Gained
+                    ChatGPT has reduced their uncertainty by:
                   </h4>
                   <ProgressBar
-                    history={_.uniqBy(questionHistory.llm, 'question').map(q => ({
-                      percentage: q.percentage,
-                      eliminated: q.eliminated
-                    }))}
+                    history={calculateAdjustedEIGHistoryForRound(currentRound)}
+                    eig_adjusted_sum={calculateAdjustedEIGSumForRound(currentRound)}
                     color="bg-green-500"
                     total={20825}
                   />
@@ -753,8 +741,8 @@ const BattleshipGame = () => {
                     <h5 className="font-medium text-gray-600">DeepSeek's Progress</h5>
                   </div>
                   <ProgressBar
-                    history={getLLMHistoryForRound(currentRound)}
-                    eig_adjusted_sum={getLLMHistoryForRound(currentRound).reduce((acc, item) => acc + item.eig_adjusted, 0)}
+                    history={calculateAdjustedEIGHistoryForRound(currentRound)}
+                    eig_adjusted_sum={calculateAdjustedEIGSumForRound(currentRound)}
                     color="bg-green-500"
                     total={20825}
                   />
@@ -857,11 +845,7 @@ const QuestionDisplay = ({
     </Alert>
   </div>
 );
-const ProgressBar = ({
-  history = [],
-  color,
-  total
-}: {
+const ProgressBar = (props: {
   history: { eig_adjusted: number; }[];
   eig_adjusted_sum: number;
   color: string;
@@ -869,22 +853,20 @@ const ProgressBar = ({
 }) => (
   <div className="space-y-2">
     <div className="flex justify-between text-sm text-gray-600">
-      <span>Scenarios eliminated: {Math.round(history.reduce((acc, item) =>
-        acc + item.eig_adjusted, 0) * total).toLocaleString()}</span>
-      <span>Remaining scenarios: {((1 - Math.round(history.reduce((acc, item) =>
-        acc + item.eig_adjusted, 0))) * total).toLocaleString()}</span>
+      <span>Scenarios eliminated: {Math.round(props.eig_adjusted_sum / 100 * props.total).toLocaleString()}</span>
+      <span>Remaining scenarios: {Math.round((1 - props.eig_adjusted_sum / 100) * props.total).toLocaleString()}</span>
     </div>
     <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
       <div className="h-full flex">
-        {history.map((item, index) => {
-          const eliminated = calculateEliminatedScenarios(item.eig_adjusted, total);
+        {props.history.map((item, index) => {
+          const eliminated = calculateEliminatedScenarios(item.eig_adjusted, props.total);
           return (
             <div
               key={index}
-              className={`h-full ${color} transition-all duration-500`}
+              className={`h-full ${props.color} transition-all duration-500`}
               style={{
                 width: `${item.eig_adjusted}%`,
-                borderRight: index < history.length - 1 ? '2px solid rgba(255, 255, 255, 0.5)' : 'none'
+                borderRight: index < props.history.length - 1 ? '2px solid rgba(255, 255, 255, 0.5)' : 'none'
               }}
               title={`Eliminated ${eliminated.toLocaleString()} scenarios`}
             />
