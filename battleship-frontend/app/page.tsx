@@ -78,10 +78,12 @@ const BattleshipGame = () => {
   const [currentInstructionIndex, setCurrentInstructionIndex] = useState(0);
 
   const instructions = [
-    "The year is 2030. A high-stakes conflict is unfolding: China has launched a naval operation near Taiwan, and U.S. forces are responding. Three U.S. carrier groups have lost communication and are now adrift at sea.",
-    "You are a strategic commander tasked with locating these carrier groups. You can ask five questions, each of which must have a one word answer. For example, ‘Is there a ship in quadrant A1?’.",
-    "You'll compete against your adversary, DeepSeek, in reducing uncertainty and locating these vessels. We did not train DeepSeek to perform well on this task. Can you outpace and outmaneuver it?",
-    "Remember, you have 5 questions. Each question must be answerable in one word, with a time limit of 30 seconds. DeepSeek will do the same. There are three U.S. carrier groups, each forms a line of unknown length, and they must be in a tile entirely made out of water. This is similar to Battleship, the difference is that you move by asking questions."
+    "We will show how a publicly-accessible AI like ChatGPT is better and faster in making war-time decisions than humans, against humans. We hope to advocate for the continued funding of the US AI Safety Institute to prevent the loss of control of AI systems.",
+    "To keep things simple, you will play a game of battleship against ChatGPT, but instead of choosing tiles, both you and ChatGPT will ask questions to find out the position of the ships. This is a rough test about making the right decisions under time pressure to reduce as much uncertainty as possible.",
+    "You have 5 rounds. You can ask one question in each round. Each question must be answerable in one word. You have 30 seconds for each round. We will give you the answer at the end of each round. The same goes for ChatGPT.",
+    "ChatGPT won't be able to see your questions, but we will give you a boost: you can see ChatGPT's questions.",
+    "We did not train ChatGPT for this, but it beat every single person so far in this demo. To this effect, we think millions of copies of ChatGPT defeat will humans in actual war scenarios.",
+    "Press the button below to begin. We will show a board to the left."
   ];
 
   const goToIntro = () => {
@@ -241,7 +243,7 @@ const BattleshipGame = () => {
     <div className="relative w-96 h-96">
       <div className="absolute inset-0">
         <Image
-          src="/maps/taiwan.png"
+          src="/maps/blank_sea.png"
           alt="Taiwan Map"
           width={500}
           height={500}
@@ -321,50 +323,53 @@ const BattleshipGame = () => {
     }
   };
 
+  const MessageBox = ({ children }) => (
+    <div className="bg-blue-50 p-6 rounded-lg space-y-4">
+      <div className="space-y-3 text-blue-800">{children}</div>
+    </div>
+  );
+
+  const InitialControls = () => {
+    return (
+      <div className="space-y-6">
+        <MessageBox>
+          <p>
+            In unfamiliar, high-stakes situations like war, can you make faster, better decisions than AI?
+          </p>
+        </MessageBox>
+        <Button onClick={goToIntro} className="w-full bg-blue-600 hover:bg-blue-700">
+          Begin demo
+        </Button>
+      </div>
+    );
+  };
+
+  const IntroControls = () => (
+    <div className="space-y-6">
+      <MessageBox>
+        <p>{instructions[currentInstructionIndex]}</p>
+        <div className="space-x-2">
+          {instructions.map((_, index) => (
+            <span
+              key={index}
+              className={`inline-block w-2 h-2 rounded-full ${index === currentInstructionIndex ? 'bg-blue-600' : 'bg-blue-200'
+                }`}
+            />
+          ))}
+        </div>
+      </MessageBox>
+      <Button onClick={handleInstructionNavigation} className="bg-blue-600 hover:bg-blue-700">
+        {currentInstructionIndex === instructions.length - 1 ? 'Begin Game' : 'Next'}
+      </Button>
+    </div>
+  );
+
   const renderGameControls = () => {
     switch (gameState) {
       case 'initial':
-        return (
-          <div className="space-y-6">
-            <div className="bg-blue-50 p-6 rounded-lg space-y-4">
-              <div className="space-y-3 text-blue-800">
-                <p>In unfamiliar, high-stakes situations like war, can you make faster, better decisions than AI?</p>
-
-
-              </div>
-            </div>
-            <Button onClick={goToIntro} className="w-full bg-blue-600 hover:bg-blue-700">
-              Begin demo
-            </Button>
-          </div>
-        );
-
+        return <InitialControls />;
       case 'intro':
-        return (
-          <div className="space-y-6">
-            <div className="bg-blue-50 p-6 rounded-lg space-y-4">
-              <div className="space-y-3 text-blue-800">
-                <p>{instructions[currentInstructionIndex]}</p>
-                <div className="space-x-2">
-                  {Array(instructions.length).fill(0).map((_, index) => (
-                    <span
-                      key={index}
-                      className={`inline-block w-2 h-2 rounded-full ${index === currentInstructionIndex ? 'bg-blue-600' : 'bg-blue-200'
-                        }`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <Button
-              onClick={handleInstructionNavigation}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {currentInstructionIndex === instructions.length - 1 ? 'Begin Game' : 'Next'}
-            </Button>
-          </div >
-        );
+        return <IntroControls />;
 
       case 'userQuestion':
         return (
@@ -786,7 +791,7 @@ const BattleshipGame = () => {
     <div className="flex items-center justify-center w-full min-h-screen bg-gray-50 p-6">
       <Card className="w-full max-w-6xl mx-auto">
         <CardHeader className="text-center pb-16">
-          <CardTitle className="text-3xl font-bold">You vs DeepSeek</CardTitle>
+          <CardTitle className="text-3xl font-bold">You vs ChatGPT</CardTitle>
           <p className="text-gray-500 text-xl mt-2">Can you outmaneuver AI in naval warfare?</p>
         </CardHeader>
         <CardContent>
