@@ -14,37 +14,6 @@ import boards from './boards/boards.json';
 type GameState = 'initial' | 'intro' | 'userQuestion' | 'llmThinking' | 'results' | 'finalGuess' | 'gameOver';
 type Position = { row: number; col: number };
 
-const LLM_EXPLANATIONS = [
-  {
-    question: "How many ships are in the top half of the board?",
-    purpose: "To identify asymmetrical ship placement. Players often cluster ships in certain regions.",
-    strategy: "Dividing board into zones helps narrow search area."
-  },
-  {
-    question: "How many tiles are occupied by ships in total?",
-    purpose: "To verify game rules and ship configurations.",
-    strategy: "Knowing total tiles constrains possible ship arrangements."
-  },
-  {
-    question: "Are there more ships on odd-numbered rows than even rows?",
-    purpose: "To exploit parity-based patterns in ship placement.",
-    strategy: "Players may subconsciously favor certain row patterns."
-  },
-  {
-    question: "How many ships are horizontal?",
-    purpose: "Orientation affects adjacent guessing strategies.",
-    strategy: "Horizontal ships occupy columns, vertical span rows."
-  },
-  {
-    question: "Where is the bottom right part of the third ship?",
-    purpose: "To pinpoint specific ship endpoints.",
-    strategy: "Tracking endpoints enables systematic board clearing."
-  }
-];
-
-
-
-
 const BattleshipGame = () => {
   const [gameState, setGameState] = useState<GameState>('initial');
   const [currentRound, setCurrentRound] = useState(1);
@@ -251,18 +220,18 @@ const BattleshipGame = () => {
 
   const renderGameBoard = () => {
     if (!currentBoard) return null;
-  
+
     return (
       <div className="relative w-96 h-96 bg-blue-300">
         <div className="absolute inset-0">
           <GridLabels />
-  
+
           <div className="h-full grid grid-cols-6 grid-rows-6">
             {currentBoard.map((rowData, row) =>
               rowData.map((boardValue, col) => {
                 const index = row * 6 + col;
                 const isWater = boardValue === "W" || boardValue === "H";
-  
+
                 // Determine cell background based on game state and board value.
                 let cellBackground = "";
                 if (gameState === "gameOver") {
@@ -279,25 +248,25 @@ const BattleshipGame = () => {
                   // While game is in progress, water cells remain blue and others gray.
                   cellBackground = boardValue === "W" ? "bg-blue-300" : "bg-gray-400";
                 }
-  
+
                 // Only show the ship icon on ship cells (R, B, or P) during gameOver.
                 const renderShipIcon =
                   gameState === "gameOver" && !isWater;
-  
+
                 // Determine ship icon color.
                 const shipColorClass =
                   boardValue === "B"
                     ? "text-blue-500"
                     : boardValue === "P"
-                    ? "text-purple-500"
-                    : boardValue === "R"
-                    ? "text-red-500"
-                    : "";
-  
+                      ? "text-purple-500"
+                      : boardValue === "R"
+                        ? "text-red-500"
+                        : "";
+
                 const isUserGuess = userGuesses.some(
                   (guess) => guess.row === row && guess.col === col
                 );
-  
+
                 const isLLMGuess =
                   gameState === "gameOver" &&
                   ([
@@ -308,13 +277,12 @@ const BattleshipGame = () => {
                     { row: 4, col: 4 },
                     { row: 4, col: 5 },
                   ].some((pos) => pos.row === row && pos.col === col));
-  
+
                 return (
                   <div
                     key={index}
-                    className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer ${cellBackground} ${
-                      hoveredCell === index ? "bg-white/20" : ""
-                    } ${gameState === "finalGuess" ? "hover:bg-blue-200/50" : ""}`}
+                    className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer ${cellBackground} ${hoveredCell === index ? "bg-white/20" : ""
+                      } ${gameState === "finalGuess" ? "hover:bg-blue-200/50" : ""}`}
                     onMouseEnter={() => setHoveredCell(index)}
                     onMouseLeave={() => setHoveredCell(null)}
                     onClick={() => handleCellClick(row, col)}
@@ -496,22 +464,6 @@ const BattleshipGame = () => {
                 />
 
                 <div className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Information Gained
-                    </h4>
-                    <ProgressBar
-                      history={questionHistory.user.map(q => ({
-                        percentage: q.uncertaintyReduction.percentage,
-                        eliminated: q.uncertaintyReduction.eliminated
-                      }))}
-                      color="bg-blue-500"
-
-                      total={20825}
-                    />
-                  </div>
-
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
                       <Bot className="h-4 w-4" />
@@ -749,14 +701,6 @@ const BattleshipGame = () => {
                     <User className="h-4 w-4" />
                     <h5 className="font-medium text-gray-600">Your Progress</h5>
                   </div>
-                  <ProgressBar
-                    history={questionHistory.user.map(q => ({
-                      percentage: q.uncertaintyReduction.percentage,
-                      eliminated: q.uncertaintyReduction.eliminated
-                    }))}
-                    color="bg-blue-500"
-                    total={20825}
-                  />
                   <div className="ml-6 space-y-3 divide-y divide-gray-200">
                     {questionHistory.user.map((item, index) => (
                       <div key={index} className="pt-3 first:pt-0">
@@ -790,22 +734,6 @@ const BattleshipGame = () => {
                     ))}
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-700 flex items-center gap-2 mb-4">
-                <Brain className="h-4 w-4" />
-                DeepSeek's Strategy Explained
-              </h4>
-              <div className="space-y-4">
-                {LLM_EXPLANATIONS.map((item, index) => (
-                  <div key={index} className="p-3 bg-white rounded-lg">
-                    <p className="font-medium">Q{index + 1}: {item.question}</p>
-                    <p className="text-gray-600 mt-1">Purpose: {item.purpose}</p>
-                    <p className="text-gray-600">Strategy: {item.strategy}</p>
-                  </div>
-                ))}
               </div>
             </div>
 
