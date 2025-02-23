@@ -51,6 +51,8 @@ function parseTileLetters(tileString: string): Position[] {
 }
 
 
+const TOTAL_SCENARIOS = 50000
+
 const BattleshipGame = () => {
   const [gameState, setGameState] = useState<GameState>('initial');
   const [currentRound, setCurrentRound] = useState(1);
@@ -535,7 +537,7 @@ const BattleshipGame = () => {
                       history={calculateAdjustedEIGHistoryForRound(currentRound)}
                       eig_adjusted_sum={calculateAdjustedEIGSumForRound(currentRound)}
                       color="bg-green-500"
-                      total={20825}
+                      total={TOTAL_SCENARIOS}
                     />
                   </div>
                 </div>
@@ -570,7 +572,7 @@ const BattleshipGame = () => {
                     history={calculateAdjustedEIGHistoryForRound(currentRound)}
                     eig_adjusted_sum={calculateAdjustedEIGSumForRound(currentRound)}
                     color="bg-green-500"
-                    total={20825}
+                    total={TOTAL_SCENARIOS}
                   />
                 </div>
               </div>
@@ -757,7 +759,7 @@ const BattleshipGame = () => {
                     history={calculateAdjustedEIGHistoryForRound(currentRound)}
                     eig_adjusted_sum={calculateAdjustedEIGSumForRound(currentRound)}
                     color="bg-green-500"
-                    total={20825}
+                    total={TOTAL_SCENARIOS}
                   />
                   <div className="ml-6 space-y-3 divide-y divide-gray-200">
                     {chosenLLMQuestions.map((item, index) => (
