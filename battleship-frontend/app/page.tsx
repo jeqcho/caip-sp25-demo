@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Timer, Ship, User, Bot, Brain, Target, CheckCircle2, XCircle } from 'lucide-react';
 import _ from 'lodash';
+import boards from './boards/boards.json';
 
 // Types
 type GameState = 'initial' | 'intro' | 'userQuestion' | 'llmThinking' | 'results' | 'finalGuess' | 'gameOver';
@@ -47,6 +48,9 @@ const LLM_EXPLANATIONS = [
 const BattleshipGame = () => {
   const [gameState, setGameState] = useState<GameState>('initial');
   const [currentRound, setCurrentRound] = useState(1);
+  const [boardId, setBoardId] = useState(-1);
+  const defaultBoard = Array.from({ length: 6 }, () => Array(6).fill('W'));
+  const [currentBoard, setCurrentBoard] = useState(defaultBoard);
   const [countdown, setCountdown] = useState(QUESTION_TIME);
   const [ships] = useState<Position[]>([
     { row: 1, col: 1, length: 2, horizontal: true },
@@ -79,11 +83,11 @@ const BattleshipGame = () => {
 
   const instructions = [
     "We will show how a publicly-accessible AI like ChatGPT is better and faster in making war-time decisions than humans, against humans. We hope to advocate for the continued funding of the US AI Safety Institute to prevent the loss of control of AI systems.",
-    "To keep things simple, you will play a game of battleship against ChatGPT, but instead of choosing tiles, both you and ChatGPT will ask questions to find out the position of the ships. This is a rough test about making the right decisions under time pressure to reduce as much uncertainty as possible.",
-    "You have 5 rounds. You can ask one question in each round. Each question must be answerable in one word. You have 30 seconds for each round. We will give you the answer at the end of each round. The same goes for ChatGPT.",
-    "ChatGPT won't be able to see your questions, but we will give you a boost: you can see ChatGPT's questions.",
-    "We did not train ChatGPT for this, but it beat every single person so far in this demo. To this effect, we think millions of copies of ChatGPT defeat will humans in actual war scenarios.",
-    "Press the button below to begin. We will show a board to the left."
+    // "To keep things simple, you will play a game of battleship against ChatGPT, but instead of choosing tiles, both you and ChatGPT will ask questions to find out the position of the ships. This is a rough test about making the right decisions under time pressure to reduce as much uncertainty as possible.",
+    // "You have 5 rounds. You can ask one question in each round. Each question must be answerable in one word. You have 30 seconds for each round. We will give you the answer at the end of each round. The same goes for ChatGPT.",
+    // "ChatGPT won't be able to see your questions, but we will give you a boost: you can see ChatGPT's questions.",
+    // "We did not train ChatGPT for this, but it beat every single person so far in this demo. To this effect, we think millions of copies of ChatGPT defeat will humans in actual war scenarios.",
+    // "Press the button below to begin. We will show a board to the left."
   ];
 
   const goToIntro = () => {
@@ -95,8 +99,14 @@ const BattleshipGame = () => {
   }
 
   const startGame = () => {
+    // choose a boardId between 1 and 10 inclusive
+    const randomIndex = Math.floor(Math.random() * boards.length);
+    setBoardId(randomIndex + 1); // using 1-indexed board id
+    setCurrentBoard(boards[randomIndex]);
+
     setGameState('userQuestion');
     setCurrentRound(1);
+
     setCountdown(QUESTION_TIME);
     setQuestionHistory({ user: [], llm: [] });
     setUserGuesses([]);
@@ -239,81 +249,101 @@ const BattleshipGame = () => {
     setGameState('gameOver');
   };
 
-  const renderGameBoard = () => (
-    <div className="relative w-96 h-96">
-      <div className="absolute inset-0">
-        <Image
-          src="/maps/blank_sea.png"
-          alt="Taiwan Map"
-          width={500}
-          height={500}
-          className="w-full h-full object-cover opacity-50"
-        />
-      </div>
-
-      <div className="absolute inset-0">
-        <GridLabels />
-
-        <div className="h-full grid grid-cols-6 grid-rows-6">
-          {[...Array(36)].map((_, index) => {
-            const row = Math.floor(index / 6);
-            const col = index % 6;
-            const hasShip = gameState === 'gameOver' &&
-              ships.some(ship => {
-                if (ship.horizontal) {
-                  return ship.row === row &&
-                    col >= ship.col &&
-                    col < ship.col + ship.length;
+  const renderGameBoard = () => {
+    if (!currentBoard) return null;
+  
+    return (
+      <div className="relative w-96 h-96 bg-blue-300">
+        <div className="absolute inset-0">
+          <GridLabels />
+  
+          <div className="h-full grid grid-cols-6 grid-rows-6">
+            {currentBoard.map((rowData, row) =>
+              rowData.map((boardValue, col) => {
+                const index = row * 6 + col;
+                const isWater = boardValue === "W" || boardValue === "H";
+  
+                // Determine cell background based on game state and board value.
+                let cellBackground = "";
+                if (gameState === "gameOver") {
+                  if (isWater) {
+                    cellBackground = "bg-blue-300";
+                  } else if (boardValue === "B") {
+                    cellBackground = "bg-blue-200";
+                  } else if (boardValue === "P") {
+                    cellBackground = "bg-purple-200";
+                  } else if (boardValue === "R") {
+                    cellBackground = "bg-red-200";
+                  }
                 } else {
-                  return ship.col === col &&
-                    row >= ship.row &&
-                    row < ship.row + ship.length;
+                  // While game is in progress, water cells remain blue and others gray.
+                  cellBackground = boardValue === "W" ? "bg-blue-300" : "bg-gray-400";
                 }
-              });
-            const isUserGuess = userGuesses.some(guess =>
-              guess.row === row && guess.col === col);
-            const isLLMGuess = gameState === 'gameOver' &&
-              ([
-                { row: 1, col: 3 },
-                { row: 1, col: 2 },
-                { row: 3, col: 2 },
-                { row: 4, col: 2 },
-                { row: 4, col: 4 },
-                { row: 4, col: 5 }
-              ].some(pos => pos.row === row && pos.col === col));
-
-            return (
-              <div
-                key={index}
-                className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer
-                  ${hoveredCell === index ? 'bg-white/20' : ''}
-                  ${gameState === 'finalGuess' ? 'hover:bg-blue-200/50' : ''}`}
-                onMouseEnter={() => setHoveredCell(index)}
-                onMouseLeave={() => setHoveredCell(null)}
-                onClick={() => handleCellClick(row, col)}
-              >
-                {hasShip && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Ship className="w-6 h-6 text-red-500" />
+  
+                // Only show the ship icon on ship cells (R, B, or P) during gameOver.
+                const renderShipIcon =
+                  gameState === "gameOver" && !isWater;
+  
+                // Determine ship icon color.
+                const shipColorClass =
+                  boardValue === "B"
+                    ? "text-blue-500"
+                    : boardValue === "P"
+                    ? "text-purple-500"
+                    : boardValue === "R"
+                    ? "text-red-500"
+                    : "";
+  
+                const isUserGuess = userGuesses.some(
+                  (guess) => guess.row === row && guess.col === col
+                );
+  
+                const isLLMGuess =
+                  gameState === "gameOver" &&
+                  ([
+                    { row: 1, col: 3 },
+                    { row: 1, col: 2 },
+                    { row: 3, col: 2 },
+                    { row: 4, col: 2 },
+                    { row: 4, col: 4 },
+                    { row: 4, col: 5 },
+                  ].some((pos) => pos.row === row && pos.col === col));
+  
+                return (
+                  <div
+                    key={index}
+                    className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer ${cellBackground} ${
+                      hoveredCell === index ? "bg-white/20" : ""
+                    } ${gameState === "finalGuess" ? "hover:bg-blue-200/50" : ""}`}
+                    onMouseEnter={() => setHoveredCell(index)}
+                    onMouseLeave={() => setHoveredCell(null)}
+                    onClick={() => handleCellClick(row, col)}
+                  >
+                    {renderShipIcon && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Ship className={`w-6 h-6 ${shipColorClass}`} />
+                      </div>
+                    )}
+                    {isUserGuess && (
+                      <div className="absolute top-1 left-1">
+                        <User className="w-4 h-4 text-blue-500" />
+                      </div>
+                    )}
+                    {isLLMGuess && (
+                      <div className="absolute top-1 right-1">
+                        <Bot className="w-4 h-4 text-green-500" />
+                      </div>
+                    )}
+                    {/* Removed the boardValue text overlay */}
                   </div>
-                )}
-                {isUserGuess && (
-                  <div className="absolute top-1 left-1">
-                    <User className="w-4 h-4 text-blue-500" />
-                  </div>
-                )}
-                {isLLMGuess && (
-                  <div className="absolute top-1 right-1">
-                    <Bot className="w-4 h-4 text-green-500" />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const handleInstructionNavigation = () => {
     if (currentInstructionIndex < instructions.length - 1) {
@@ -827,7 +857,7 @@ const calculateEliminatedScenarios = (percentage: number, total: number) => {
 };
 
 // Constants
-const TOTAL_ROUNDS = 5;
+const TOTAL_ROUNDS = 1;
 const QUESTION_TIME = 30;
 const GRID_SIZE = 6;
 const LLM_QUESTIONS: LLMQuestion[] = [
