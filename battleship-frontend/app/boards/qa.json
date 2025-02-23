@@ -1,0 +1,1622 @@
+[
+    {
+        "answer": "Water",
+        "completion": "What is at A3?",
+        "score": 69.64309044320923,
+        "board": 1
+    },
+    {
+        "answer": "B2",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 73.51120371165814,
+        "board": 1
+    },
+    {
+        "answer": "C4",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 71.70171089644495,
+        "board": 1
+    },
+    {
+        "answer": "B2",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 79.27658686006984,
+        "board": 1
+    },
+    {
+        "answer": "C5",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 65.72787129763282,
+        "board": 1
+    },
+    {
+        "answer": "D2",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 71.94916384841609,
+        "board": 1
+    },
+    {
+        "answer": "D6",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 49.375099729767854,
+        "board": 1
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are vertical?",
+        "score": 72.60977798538471,
+        "board": 1
+    },
+    {
+        "answer": "2",
+        "completion": "How many horizontal ships are there?",
+        "score": 63.57575734689453,
+        "board": 1
+    },
+    {
+        "answer": "6",
+        "completion": "Which row is the row occupied by the rightmost ship?",
+        "score": 67.45352062116879,
+        "board": 1
+    },
+    {
+        "answer": "4",
+        "completion": "Which column does the centermost ship inhabit?",
+        "score": 78.95221913468555,
+        "board": 1
+    },
+    {
+        "answer": "Water",
+        "completion": "What are the coordinates of the ship if there is a ship at 3B?",
+        "score": 67.66800682088054,
+        "board": 1
+    },
+    {
+        "answer": "4",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 76.68686978107772,
+        "board": 1
+    },
+    {
+        "answer": "2",
+        "completion": "What is the length of the centermost ship?",
+        "score": 65.75749534757277,
+        "board": 1
+    },
+    {
+        "answer": "C4",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 58.29455355577793,
+        "board": 1
+    },
+    {
+        "answer": "C3",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 70.92423434670778,
+        "board": 1
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 4 long?",
+        "score": 57.76701571685531,
+        "board": 1
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 64.52425882147958,
+        "board": 1
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at 4F?",
+        "score": 60.15233331978334,
+        "board": 1
+    },
+    {
+        "answer": "C4",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 59.88268613471537,
+        "board": 1
+    },
+    {
+        "answer": "Purple",
+        "completion": "Who touches the central ship?",
+        "score": 77.42621467693805,
+        "board": 1
+    },
+    {
+        "answer": "Red",
+        "completion": "What is at C2?",
+        "score": 70.03744047540732,
+        "board": 1
+    },
+    {
+        "answer": "Red",
+        "completion": "What is at 2C?",
+        "score": 66.61144612377755,
+        "board": 1
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 1C?",
+        "score": 50.94498200711804,
+        "board": 1
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3B?",
+        "score": 74.85577487516004,
+        "board": 1
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3F?",
+        "score": 68.104997958612,
+        "board": 1
+    },
+    {
+        "answer": "Yes",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 55.28767621356719,
+        "board": 1
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at A3?",
+        "score": 68.56710253457773,
+        "board": 2
+    },
+    {
+        "answer": "B2",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 55.57259674675924,
+        "board": 2
+    },
+    {
+        "answer": "C4",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 67.48829008516948,
+        "board": 2
+    },
+    {
+        "answer": "F3",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 53.88117246698238,
+        "board": 2
+    },
+    {
+        "answer": "E4",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 70.03926833886015,
+        "board": 2
+    },
+    {
+        "answer": "F6",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 74.51758350872734,
+        "board": 2
+    },
+    {
+        "answer": "B1",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 57.61371925613538,
+        "board": 2
+    },
+    {
+        "answer": "2",
+        "completion": "How many ships are vertical?",
+        "score": 68.31488337388792,
+        "board": 2
+    },
+    {
+        "answer": "1",
+        "completion": "How many horizontal ships are there?",
+        "score": 61.51826202846362,
+        "board": 2
+    },
+    {
+        "answer": "F",
+        "completion": "Which column is the row occupied by the rightmost ship?",
+        "score": 68.67252502824846,
+        "board": 2
+    },
+    {
+        "answer": "4",
+        "completion": "Which row does the centermost ship inhabit?",
+        "score": 54.09402503532998,
+        "board": 2
+    },
+    {
+        "answer": "Water",
+        "completion": "What are the coordinates of the ship if there is a ship at 3B?",
+        "score": 60.44103266047601,
+        "board": 2
+    },
+    {
+        "answer": "4",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 63.525137950405124,
+        "board": 2
+    },
+    {
+        "answer": "3",
+        "completion": "What is the length of the centermost ship?",
+        "score": 68.34166033474732,
+        "board": 2
+    },
+    {
+        "answer": "C4",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 69.12735593866904,
+        "board": 2
+    },
+    {
+        "answer": "C3",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 61.92350805777213,
+        "board": 2
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 4 long?",
+        "score": 71.49770001388015,
+        "board": 2
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 62.34778995012403,
+        "board": 2
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is at 4F?",
+        "score": 48.919507497413775,
+        "board": 2
+    },
+    {
+        "answer": "4C",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 52.63704159017148,
+        "board": 2
+    },
+    {
+        "answer": "Purple",
+        "completion": "Who touches the central ship?",
+        "score": 60.25846904564632,
+        "board": 2
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at C2?",
+        "score": 50.141775279052666,
+        "board": 2
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at 2C?",
+        "score": 66.83573194766221,
+        "board": 2
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 1C?",
+        "score": 51.03088408409627,
+        "board": 2
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3B?",
+        "score": 69.31026964180124,
+        "board": 2
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is 3F?",
+        "score": 46.10889061707689,
+        "board": 2
+    },
+    {
+        "answer": "Yes",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 59.54849025117398,
+        "board": 2
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at A3?",
+        "score": 61.80059463228313,
+        "board": 3
+    },
+    {
+        "answer": "A6",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 70.27060932743056,
+        "board": 3
+    },
+    {
+        "answer": "B3",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 61.618252929035265,
+        "board": 3
+    },
+    {
+        "answer": "E1",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 65.44996938016696,
+        "board": 3
+    },
+    {
+        "answer": "E3",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 52.00496734817276,
+        "board": 3
+    },
+    {
+        "answer": "F1",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 63.23056607323958,
+        "board": 3
+    },
+    {
+        "answer": "A4",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 64.90588918412286,
+        "board": 3
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are vertical?",
+        "score": 63.7672275906781,
+        "board": 3
+    },
+    {
+        "answer": "2",
+        "completion": "How many horizontal ships are there?",
+        "score": 59.72941362971527,
+        "board": 3
+    },
+    {
+        "answer": "1",
+        "completion": "Which row is the row occupied by the rightmost ship?",
+        "score": 77.90934551346513,
+        "board": 3
+    },
+    {
+        "answer": "3",
+        "completion": "Which row does the centermost ship inhabit?",
+        "score": 59.56668136600909,
+        "board": 3
+    },
+    {
+        "answer": "3B",
+        "completion": "What are the coordinates of the ship if there is a ship at 3B?",
+        "score": 57.76668711629202,
+        "board": 3
+    },
+    {
+        "answer": "2",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 66.40201129351671,
+        "board": 3
+    },
+    {
+        "answer": "4",
+        "completion": "What is the length of the centermost ship?",
+        "score": 59.35559744610182,
+        "board": 3
+    },
+    {
+        "answer": "B3",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 53.877511126541805,
+        "board": 3
+    },
+    {
+        "answer": "A3",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 72.64440505963296,
+        "board": 3
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 4 long?",
+        "score": 67.5926798159854,
+        "board": 3
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 84.07727806682519,
+        "board": 3
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at 4F?",
+        "score": 59.205476611081096,
+        "board": 3
+    },
+    {
+        "answer": "C2",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 60.8192388331336,
+        "board": 3
+    },
+    {
+        "answer": "Blue",
+        "completion": "Who touches the central ship?",
+        "score": 69.36768707157873,
+        "board": 3
+    },
+    {
+        "answer": "Blue",
+        "completion": "What is at A4?",
+        "score": 66.00696445687225,
+        "board": 3
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at 2C?",
+        "score": 59.31468063521503,
+        "board": 3
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is 1E?",
+        "score": 65.1752876213226,
+        "board": 3
+    },
+    {
+        "answer": "Red",
+        "completion": "What is 3B?",
+        "score": 64.28494070420678,
+        "board": 3
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3F?",
+        "score": 74.12891051549695,
+        "board": 3
+    },
+    {
+        "answer": "Yes",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 57.07761914656251,
+        "board": 3
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at A3?",
+        "score": 60.7804785921092,
+        "board": 4
+    },
+    {
+        "answer": "B5",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 73.79691280525817,
+        "board": 4
+    },
+    {
+        "answer": "D1",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 72.76624357920284,
+        "board": 4
+    },
+    {
+        "answer": "F4",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 59.35762593418727,
+        "board": 4
+    },
+    {
+        "answer": "D3",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 75.11307633682364,
+        "board": 4
+    },
+    {
+        "answer": "F5",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 57.20451103404537,
+        "board": 4
+    },
+    {
+        "answer": "E5",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 47.930307416477234,
+        "board": 4
+    },
+    {
+        "answer": "2",
+        "completion": "How many ships are vertical?",
+        "score": 56.87613142086429,
+        "board": 4
+    },
+    {
+        "answer": "1",
+        "completion": "How many horizontal ships are there?",
+        "score": 64.84494704334469,
+        "board": 4
+    },
+    {
+        "answer": "F",
+        "completion": "Which column is the column occupied by the rightmost ship?",
+        "score": 64.60143386972447,
+        "board": 4
+    },
+    {
+        "answer": "D",
+        "completion": "Which column does the centermost ship inhabit?",
+        "score": 79.88758396772779,
+        "board": 4
+    },
+    {
+        "answer": "B5",
+        "completion": "What's a tile belonging to the ship closest to 3B?",
+        "score": 76.6406565566881,
+        "board": 4
+    },
+    {
+        "answer": "2",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 48.55194587594409,
+        "board": 4
+    },
+    {
+        "answer": "3",
+        "completion": "What is the length of the centermost ship?",
+        "score": 69.53648242966048,
+        "board": 4
+    },
+    {
+        "answer": "D1",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 62.25092936987014,
+        "board": 4
+    },
+    {
+        "answer": "D4",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 66.35259005373284,
+        "board": 4
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 4 long?",
+        "score": 64.52318160891714,
+        "board": 4
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 64.94849471994188,
+        "board": 4
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is at 4F?",
+        "score": 72.83479738352467,
+        "board": 4
+    },
+    {
+        "answer": "B5",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 58.60560975344548,
+        "board": 4
+    },
+    {
+        "answer": "Water",
+        "completion": "Who touches the central ship?",
+        "score": 63.05064092290433,
+        "board": 4
+    },
+    {
+        "answer": "Blue",
+        "completion": "What is at D5?",
+        "score": 59.5711920115695,
+        "board": 4
+    },
+    {
+        "answer": "Red",
+        "completion": "What is at D2?",
+        "score": 59.445053421839425,
+        "board": 4
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 1C?",
+        "score": 82.78456687494459,
+        "board": 4
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3B?",
+        "score": 69.73686348140974,
+        "board": 4
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3F?",
+        "score": 71.5332938922991,
+        "board": 4
+    },
+    {
+        "answer": "Yes",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 54.80361685107251,
+        "board": 4
+    },
+    {
+        "answer": "Blue",
+        "completion": "What is at A3?",
+        "score": 63.993148005458636,
+        "board": 5
+    },
+    {
+        "answer": "A3",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 57.11190049157137,
+        "board": 5
+    },
+    {
+        "answer": "B5",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 75.23514591938991,
+        "board": 5
+    },
+    {
+        "answer": "E6",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 73.11758982129145,
+        "board": 5
+    },
+    {
+        "answer": "D5",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 62.443961393831785,
+        "board": 5
+    },
+    {
+        "answer": "F6",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 63.474125563299715,
+        "board": 5
+    },
+    {
+        "answer": "A1",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 63.17413395882361,
+        "board": 5
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are vertical?",
+        "score": 73.99634322144811,
+        "board": 5
+    },
+    {
+        "answer": "2",
+        "completion": "How many horizontal ships are there?",
+        "score": 55.94359703019758,
+        "board": 5
+    },
+    {
+        "answer": "6",
+        "completion": "Which row is the row occupied by the rightmost ship?",
+        "score": 59.24509946593392,
+        "board": 5
+    },
+    {
+        "answer": "5",
+        "completion": "Which row does the centermost ship inhabit?",
+        "score": 65.56367114779559,
+        "board": 5
+    },
+    {
+        "answer": "Water",
+        "completion": "What are the coordinates of the ship if there is a ship at 3B?",
+        "score": 57.51294975466543,
+        "board": 5
+    },
+    {
+        "answer": "2",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 64.63245065709746,
+        "board": 5
+    },
+    {
+        "answer": "3",
+        "completion": "What is the length of the centermost ship?",
+        "score": 57.29882382789008,
+        "board": 5
+    },
+    {
+        "answer": "B5",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 75.44079869724749,
+        "board": 5
+    },
+    {
+        "answer": "A5",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 50.57041281474416,
+        "board": 5
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 4 long?",
+        "score": 88.27010556511016,
+        "board": 5
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 70.75556097352043,
+        "board": 5
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at 4F?",
+        "score": 70.22381651888044,
+        "board": 5
+    },
+    {
+        "answer": "Water",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 62.513262558187364,
+        "board": 5
+    },
+    {
+        "answer": "Water",
+        "completion": "Who touches the central ship?",
+        "score": 64.93656625484601,
+        "board": 5
+    },
+    {
+        "answer": "Blue",
+        "completion": "What is at A4?",
+        "score": 73.40899829618145,
+        "board": 5
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is at C5?",
+        "score": 57.55122337692617,
+        "board": 5
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 1C?",
+        "score": 73.66417899070031,
+        "board": 5
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3B?",
+        "score": 56.50219992281477,
+        "board": 5
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3F?",
+        "score": 53.12236415697377,
+        "board": 5
+    },
+    {
+        "answer": "Yes",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 61.644081612337885,
+        "board": 5
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is at A3?",
+        "score": 66.54614857798423,
+        "board": 6
+    },
+    {
+        "answer": "A5",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 64.54392712375609,
+        "board": 6
+    },
+    {
+        "answer": "D1",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 75.77752727027175,
+        "board": 6
+    },
+    {
+        "answer": "B6",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 43.867193620495996,
+        "board": 6
+    },
+    {
+        "answer": "C6",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 69.74827766545297,
+        "board": 6
+    },
+    {
+        "answer": "D1",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 78.59976247644569,
+        "board": 6
+    },
+    {
+        "answer": "A3",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 69.3411914559423,
+        "board": 6
+    },
+    {
+        "answer": "2",
+        "completion": "How many ships are vertical?",
+        "score": 65.16734859042096,
+        "board": 6
+    },
+    {
+        "answer": "1",
+        "completion": "How many horizontal ships are there?",
+        "score": 56.37824326972465,
+        "board": 6
+    },
+    {
+        "answer": "D",
+        "completion": "Which column is the column occupied by the rightmost ship?",
+        "score": 61.0393427992231,
+        "board": 6
+    },
+    {
+        "answer": "6",
+        "completion": "Which row does the centermost ship inhabit?",
+        "score": 80.78713378504044,
+        "board": 6
+    },
+    {
+        "answer": "Water",
+        "completion": "What are the coordinates of the ship if there is a ship at 3B?",
+        "score": 59.03569315048607,
+        "board": 6
+    },
+    {
+        "answer": "4",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 73.17096361510342,
+        "board": 6
+    },
+    {
+        "answer": "2",
+        "completion": "What is the length of the centermost ship?",
+        "score": 61.96404658852525,
+        "board": 6
+    },
+    {
+        "answer": "B6",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 58.73840381960386,
+        "board": 6
+    },
+    {
+        "answer": "A6",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 64.49709455826273,
+        "board": 6
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 4 long?",
+        "score": 77.91677336221727,
+        "board": 6
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 77.7745701244664,
+        "board": 6
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at 4F?",
+        "score": 67.71604674943046,
+        "board": 6
+    },
+    {
+        "answer": "Red",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 65.15746188850058,
+        "board": 6
+    },
+    {
+        "answer": "Water",
+        "completion": "Who touches the central ship?",
+        "score": 67.63941643805994,
+        "board": 6
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at C2?",
+        "score": 67.3168705223723,
+        "board": 6
+    },
+    {
+        "answer": "Red",
+        "completion": "What is at D1?",
+        "score": 61.63487155841872,
+        "board": 6
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 1C?",
+        "score": 75.2147177909456,
+        "board": 6
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3B?",
+        "score": 60.71133083065324,
+        "board": 6
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3F?",
+        "score": 63.64614291385971,
+        "board": 6
+    },
+    {
+        "answer": "No",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 63.05443839668444,
+        "board": 6
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at A3?",
+        "score": 61.50401208023281,
+        "board": 7
+    },
+    {
+        "answer": "A6",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 72.51756317195388,
+        "board": 7
+    },
+    {
+        "answer": "E3",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 69.35572133517648,
+        "board": 7
+    },
+    {
+        "answer": "D2",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 51.63557947121337,
+        "board": 7
+    },
+    {
+        "answer": "E5",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 60.86134720868613,
+        "board": 7
+    },
+    {
+        "answer": "F2",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 76.47981035640095,
+        "board": 7
+    },
+    {
+        "answer": "D6",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 61.10399250563295,
+        "board": 7
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are vertical?",
+        "score": 62.4765184671577,
+        "board": 7
+    },
+    {
+        "answer": "2",
+        "completion": "How many horizontal ships are there?",
+        "score": 73.44813971136281,
+        "board": 7
+    },
+    {
+        "answer": "2",
+        "completion": "Which row is the row occupied by the rightmost ship?",
+        "score": 66.55583072683615,
+        "board": 7
+    },
+    {
+        "answer": "E",
+        "completion": "Which column does the centermost ship inhabit?",
+        "score": 65.12693831494087,
+        "board": 7
+    },
+    {
+        "answer": "Water",
+        "completion": "What are the coordinates of the ship if there is a ship at 3B?",
+        "score": 66.62966516942343,
+        "board": 7
+    },
+    {
+        "answer": "3",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 55.49181357899396,
+        "board": 7
+    },
+    {
+        "answer": "3",
+        "completion": "What is the length of the centermost ship?",
+        "score": 69.83069807662343,
+        "board": 7
+    },
+    {
+        "answer": "E3",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 61.33800411876238,
+        "board": 7
+    },
+    {
+        "answer": "E6",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 63.04569444304423,
+        "board": 7
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 4 long?",
+        "score": 71.71251225054459,
+        "board": 7
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 59.953736040593796,
+        "board": 7
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at 4F?",
+        "score": 70.69761672985658,
+        "board": 7
+    },
+    {
+        "answer": "Water",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 70.08924395854235,
+        "board": 7
+    },
+    {
+        "answer": "Water",
+        "completion": "Who touches the central ship?",
+        "score": 74.99360027579266,
+        "board": 7
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at C2?",
+        "score": 75.93070123045568,
+        "board": 7
+    },
+    {
+        "answer": "Red",
+        "completion": "What is at D2?",
+        "score": 60.09349847467892,
+        "board": 7
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 1C?",
+        "score": 53.19321379397503,
+        "board": 7
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is 6B?",
+        "score": 63.68682526397915,
+        "board": 7
+    },
+    {
+        "answer": "Blue",
+        "completion": "What is 5E?",
+        "score": 58.43443624348581,
+        "board": 7
+    },
+    {
+        "answer": "No",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 67.05300681410972,
+        "board": 7
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at A3?",
+        "score": 66.82866104519373,
+        "board": 8
+    },
+    {
+        "answer": "C2",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 57.28613179906931,
+        "board": 8
+    },
+    {
+        "answer": "D3",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 62.55685032920116,
+        "board": 8
+    },
+    {
+        "answer": "F3",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 72.66667090712845,
+        "board": 8
+    },
+    {
+        "answer": "E3",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 64.86338166799172,
+        "board": 8
+    },
+    {
+        "answer": "F3",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 49.16594441339626,
+        "board": 8
+    },
+    {
+        "answer": "C1",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 62.10491460065951,
+        "board": 8
+    },
+    {
+        "answer": "2",
+        "completion": "How many ships are vertical?",
+        "score": 55.70357792643564,
+        "board": 8
+    },
+    {
+        "answer": "1",
+        "completion": "How many horizontal ships are there?",
+        "score": 65.05598596481869,
+        "board": 8
+    },
+    {
+        "answer": "F",
+        "completion": "Which column is the column occupied by the rightmost ship?",
+        "score": 66.0159529179932,
+        "board": 8
+    },
+    {
+        "answer": "3",
+        "completion": "Which row does the centermost ship inhabit?",
+        "score": 57.264843997403645,
+        "board": 8
+    },
+    {
+        "answer": "Red",
+        "completion": "What are the coordinates of the ship if there is a ship at 2C?",
+        "score": 61.016406721010334,
+        "board": 8
+    },
+    {
+        "answer": "3",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 66.4827374092403,
+        "board": 8
+    },
+    {
+        "answer": "2",
+        "completion": "What is the length of the centermost ship?",
+        "score": 72.20349902331984,
+        "board": 8
+    },
+    {
+        "answer": "D3",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 77.25529993284704,
+        "board": 8
+    },
+    {
+        "answer": "C3",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 72.45125024682204,
+        "board": 8
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 4 long?",
+        "score": 72.60986237060408,
+        "board": 8
+    },
+    {
+        "answer": "0",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 64.12681901109342,
+        "board": 8
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is at 4F?",
+        "score": 80.69014274155143,
+        "board": 8
+    },
+    {
+        "answer": "Water",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 61.70581311663699,
+        "board": 8
+    },
+    {
+        "answer": "Purple",
+        "completion": "Who touches the central ship?",
+        "score": 62.11042229693642,
+        "board": 8
+    },
+    {
+        "answer": "Red",
+        "completion": "What is at C2?",
+        "score": 67.83587892403139,
+        "board": 8
+    },
+    {
+        "answer": "Red",
+        "completion": "What is at 2C?",
+        "score": 63.07842727175762,
+        "board": 8
+    },
+    {
+        "answer": "Red",
+        "completion": "What is 1C?",
+        "score": 53.06747195082286,
+        "board": 8
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3B?",
+        "score": 71.91708916552192,
+        "board": 8
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is 3F?",
+        "score": 58.35964998632293,
+        "board": 8
+    },
+    {
+        "answer": "Yes",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 64.26314155892715,
+        "board": 8
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is at A3?",
+        "score": 66.62973800645018,
+        "board": 9
+    },
+    {
+        "answer": "B5",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 59.40743678073554,
+        "board": 9
+    },
+    {
+        "answer": "A3",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 71.36003141429282,
+        "board": 9
+    },
+    {
+        "answer": "E1",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 70.62610827108756,
+        "board": 9
+    },
+    {
+        "answer": "C3",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 69.31078283838545,
+        "board": 9
+    },
+    {
+        "answer": "F1",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 73.3307670008524,
+        "board": 9
+    },
+    {
+        "answer": "C3",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 67.32647332303306,
+        "board": 9
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are vertical?",
+        "score": 60.42718652918479,
+        "board": 9
+    },
+    {
+        "answer": "2",
+        "completion": "How many horizontal ships are there?",
+        "score": 60.59749828386846,
+        "board": 9
+    },
+    {
+        "answer": "1",
+        "completion": "Which row is the row occupied by the rightmost ship?",
+        "score": 71.06501195904485,
+        "board": 9
+    },
+    {
+        "answer": "B",
+        "completion": "Which column does the centermost ship inhabit?",
+        "score": 58.109946706015606,
+        "board": 9
+    },
+    {
+        "answer": "Purple",
+        "completion": "What are the coordinates of the ship if there is a ship at 3B?",
+        "score": 66.37789758529617,
+        "board": 9
+    },
+    {
+        "answer": "2",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 67.746075386396,
+        "board": 9
+    },
+    {
+        "answer": "3",
+        "completion": "What is the length of the centermost ship?",
+        "score": 65.04187932828506,
+        "board": 9
+    },
+    {
+        "answer": "B4",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 69.91920419300429,
+        "board": 9
+    },
+    {
+        "answer": "C4",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 67.37220149630132,
+        "board": 9
+    },
+    {
+        "answer": "0",
+        "completion": "How many ships are 4 long?",
+        "score": 60.04628763037027,
+        "board": 9
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 66.20551975224619,
+        "board": 9
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at 4F?",
+        "score": 61.42603029532865,
+        "board": 9
+    },
+    {
+        "answer": "Water",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 81.57304716436975,
+        "board": 9
+    },
+    {
+        "answer": "Blue",
+        "completion": "Who touches the central ship?",
+        "score": 65.03510188100091,
+        "board": 9
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is at C2?",
+        "score": 67.68149950050508,
+        "board": 9
+    },
+    {
+        "answer": "Purple",
+        "completion": "What is at 2C?",
+        "score": 75.11022198477941,
+        "board": 9
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 1C?",
+        "score": 59.61446986486429,
+        "board": 9
+    },
+    {
+        "answer": "Blue",
+        "completion": "What is 3B?",
+        "score": 58.39538700080921,
+        "board": 9
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3F?",
+        "score": 71.1475806938827,
+        "board": 9
+    },
+    {
+        "answer": "Yes",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 55.54335180554967,
+        "board": 9
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at A3?",
+        "score": 58.38031541580279,
+        "board": 10
+    },
+    {
+        "answer": "B1",
+        "completion": "What is the bottommost square occupied by the leftmost ship?",
+        "score": 61.29188699347642,
+        "board": 10
+    },
+    {
+        "answer": "D2",
+        "completion": "Which is the leftmost square occupied by the centermost ship?",
+        "score": 73.96059559721587,
+        "board": 10
+    },
+    {
+        "answer": "F5",
+        "completion": "What is the first tile of the rightmost ship?",
+        "score": 72.22935383836956,
+        "board": 10
+    },
+    {
+        "answer": "D4",
+        "completion": "What is the bottom-right corner of the centermost ship?",
+        "score": 74.43837787852837,
+        "board": 10
+    },
+    {
+        "answer": "F6",
+        "completion": "What is the rightmost tile of the rightmost ship?",
+        "score": 66.71828504944602,
+        "board": 10
+    },
+    {
+        "answer": "E1",
+        "completion": "What is the top-right square of the leftmost ship?",
+        "score": 67.5320107826443,
+        "board": 10
+    },
+    {
+        "answer": "2",
+        "completion": "How many ships are vertical?",
+        "score": 66.9168891426094,
+        "board": 10
+    },
+    {
+        "answer": "1",
+        "completion": "How many horizontal ships are there?",
+        "score": 59.761848739365625,
+        "board": 10
+    },
+    {
+        "answer": "F",
+        "completion": "Which column is the column occupied by the rightmost ship?",
+        "score": 60.84450953282296,
+        "board": 10
+    },
+    {
+        "answer": "D",
+        "completion": "Which column does the centermost ship inhabit?",
+        "score": 59.25468204597855,
+        "board": 10
+    },
+    {
+        "answer": "Water",
+        "completion": "What are the coordinates of the ship if there is a ship at 3B?",
+        "score": 66.34040662042416,
+        "board": 10
+    },
+    {
+        "answer": "2",
+        "completion": "How many color-specific coordinates are there for the rightmost ship?",
+        "score": 65.83118252162029,
+        "board": 10
+    },
+    {
+        "answer": "3",
+        "completion": "What is the length of the centermost ship?",
+        "score": 75.75615773230027,
+        "board": 10
+    },
+    {
+        "answer": "D2",
+        "completion": "What are the co-ordinates of the leftmost square occupied by the centermost ship?",
+        "score": 65.40604271620228,
+        "board": 10
+    },
+    {
+        "answer": "D5",
+        "completion": "What are the co-ordinates of the water tile closest to the central ship?",
+        "score": 71.48471700632773,
+        "board": 10
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 4 long?",
+        "score": 68.32029598366071,
+        "board": 10
+    },
+    {
+        "answer": "1",
+        "completion": "How many ships are 3-blocks long?",
+        "score": 58.75639178887789,
+        "board": 10
+    },
+    {
+        "answer": "Water",
+        "completion": "What is at 4F?",
+        "score": 49.8837383337185,
+        "board": 10
+    },
+    {
+        "answer": "Water",
+        "completion": "What is the coordinate leftmost tile of the ship at 4C?",
+        "score": 59.899740656389156,
+        "board": 10
+    },
+    {
+        "answer": "Blue",
+        "completion": "Who touches the central ship?",
+        "score": 85.7404096778788,
+        "board": 10
+    },
+    {
+        "answer": "Red",
+        "completion": "What is at C2?",
+        "score": 57.960252607638324,
+        "board": 10
+    },
+    {
+        "answer": "Red",
+        "completion": "What is at 2C?",
+        "score": 51.70025312754921,
+        "board": 10
+    },
+    {
+        "answer": "Blue",
+        "completion": "What is 1C?",
+        "score": 76.89145292032066,
+        "board": 10
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3B?",
+        "score": 73.58212857654372,
+        "board": 10
+    },
+    {
+        "answer": "Water",
+        "completion": "What is 3F?",
+        "score": 79.3131094237497,
+        "board": 10
+    },
+    {
+        "answer": "Yes",
+        "completion": "Does the rightmost ship touch the edges of the map?",
+        "score": 63.58968249951081,
+        "board": 10
+    }
+]

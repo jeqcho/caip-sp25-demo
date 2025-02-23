@@ -10,10 +10,26 @@ import { Timer, Ship, User, Bot, Brain, Target, CheckCircle2, XCircle } from 'lu
 import _ from 'lodash';
 import boards from './boards/boards.json';
 import llm_guesses from './boards/llm-guesses.json';
+import LLM_QA_DATASET from './boards/qa.json'
+import LLMQuestionTileChoice from './boards/dummy-question-and-tile-choice.json'
 
 // Types
 type GameState = 'initial' | 'intro' | 'userQuestion' | 'llmThinking' | 'results' | 'finalGuess' | 'gameOver';
 type Position = { row: number; col: number };
+type LLMQA_Type = [string, string, number]
+type Question = {
+  question: string;
+  answer: string;
+  uncertaintyReduction: { percentage: number; };
+};
+type LLMQuestion = {
+  question: string;
+  answer: string;
+  eig: number;
+};
+type ProgressBarHistory = { eig_adjusted: number; }[];
+type QKey = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Q5';
+
 
 const BattleshipGame = () => {
   const [gameState, setGameState] = useState<GameState>('initial');
@@ -21,6 +37,7 @@ const BattleshipGame = () => {
   const [boardId, setBoardId] = useState(-1);
   const defaultBoard = Array.from({ length: 6 }, () => Array(6).fill('W'));
   const [currentBoard, setCurrentBoard] = useState(defaultBoard);
+  const [chosenLLMQuestions, setChosenLLMQuestions] = useState<LLMQuestion[]>([]);
   const [llmGuesses, setLLMGuesses] = useState<Position[]>([{}]);
   const [countdown, setCountdown] = useState(QUESTION_TIME);
   const [ships] = useState<Position[]>([
@@ -61,6 +78,17 @@ const BattleshipGame = () => {
     // "Press the button below to begin. We will show a board to the left."
   ];
 
+  const getLLMHistoryForRound = (roundId: Number): ProgressBarHistory => {
+    const adjusted_eigs = [];
+    var cum_eig: number = 0;
+    for (const question of chosenLLMQuestions) {
+      const adjusted_eig = (100 - cum_eig) * question.EIG / 100;
+      adjusted_eigs.push(adjusted_eig);
+    }
+    return adjusted_eigs.map(eig => ({ eig_adjusted: eig }));
+  }
+
+
   const goToIntro = () => {
     setGameState('intro');
   }
@@ -71,10 +99,24 @@ const BattleshipGame = () => {
 
   const startGame = () => {
     // choose a boardId between 1 and 10 inclusive
-    const randomIndex = Math.floor(Math.random() * boards.length);
-    setBoardId(randomIndex + 1); // using 1-indexed board id
-    setCurrentBoard(boards[randomIndex]);
-    setLLMGuesses(llm_guesses[randomIndex]); // using 1-indexed board id
+    const questionTileChoiceIndex = Math.floor(Math.random() * LLMQuestionTileChoice.length);
+    const questionTileChoice = LLMQuestionTileChoice[questionTileChoiceIndex];
+    setBoardId(questionTileChoice.board);
+    setCurrentBoard(boards[questionTileChoice.board - 1]);
+
+    const llm_questions: LLMQuestion[] = [];
+    for (let qid = 1; qid <= TOTAL_ROUNDS; ++qid) {
+      const qid_str = `Q${qid}` as QKey;
+      const question = LLM_QA_DATASET[questionTileChoice[qid_str]]
+      const question_wrapped: LLMQuestion = {
+        "question": question.completion,
+        "answer": question.answer,
+        "eig": question.score,
+      }
+      llm_questions.push(question_wrapped)
+    }
+    setChosenLLMQuestions(llm_questions);
+    setLLMGuesses(llm_guesses[5]);
 
     setGameState('userQuestion');
     setCurrentRound(1);
@@ -223,18 +265,18 @@ const BattleshipGame = () => {
 
   const renderGameBoard = () => {
     if (!currentBoard) return null;
-  
+
     return (
       <div className="relative w-96 h-96 bg-blue-300">
         <div className="absolute inset-0">
           <GridLabels />
-  
+
           <div className="h-full grid grid-cols-6 grid-rows-6">
             {currentBoard.map((rowData, row) =>
               rowData.map((boardValue, col) => {
                 const index = row * 6 + col;
                 const isWater = boardValue === "W" || boardValue === "H";
-  
+
                 let cellBackground = "";
                 if (gameState === "gameOver") {
                   if (isWater) {
@@ -249,34 +291,33 @@ const BattleshipGame = () => {
                 } else {
                   cellBackground = boardValue === "W" ? "bg-blue-300" : "bg-gray-400";
                 }
-  
+
                 const renderShipIcon = gameState === "gameOver" && !isWater;
-  
+
                 const shipColorClass =
                   boardValue === "B"
                     ? "text-blue-500"
                     : boardValue === "P"
-                    ? "text-purple-500"
-                    : boardValue === "R"
-                    ? "text-red-500"
-                    : "";
-  
+                      ? "text-purple-500"
+                      : boardValue === "R"
+                        ? "text-red-500"
+                        : "";
+
                 const isUserGuess = userGuesses.some(
                   (guess) => guess.row === row && guess.col === col
                 );
-  
+
                 const isLLMGuess =
                   gameState === "gameOver" &&
                   llmGuesses.some(
                     (guess) => guess.row === row && guess.col === col
                   );
-  
+
                 return (
                   <div
                     key={index}
-                    className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer ${cellBackground} ${
-                      hoveredCell === index ? "bg-white/20" : ""
-                    } ${gameState === "finalGuess" ? "hover:bg-blue-200/50" : ""}`}
+                    className={`border border-gray-600/50 transition-colors duration-200 relative cursor-pointer ${cellBackground} ${hoveredCell === index ? "bg-white/20" : ""
+                      } ${gameState === "finalGuess" ? "hover:bg-blue-200/50" : ""}`}
                     onMouseEnter={() => setHoveredCell(index)}
                     onMouseLeave={() => setHoveredCell(null)}
                     onClick={() => handleCellClick(row, col)}
@@ -463,10 +504,11 @@ const BattleshipGame = () => {
                       DeepSeek's Information Gained
                     </h4>
                     <ProgressBar
-                      history={_.uniqBy(questionHistory.llm, 'question').map(q => ({
-                        percentage: q.percentage,
-                        eliminated: q.eliminated
-                      }))}
+                      history={chosenLLMQuestions.slice(0, currentRound + 1).map(q => ({
+                        eig_adjusted: q.EIG
+                      })),
+                    
+                    }
                       color="bg-green-500"
                       total={20825}
                     />
@@ -711,10 +753,8 @@ const BattleshipGame = () => {
                     <h5 className="font-medium text-gray-600">DeepSeek's Progress</h5>
                   </div>
                   <ProgressBar
-                    history={_.uniqBy(questionHistory.llm, 'question').map(q => ({
-                      percentage: q.percentage,
-                      eliminated: q.eliminated
-                    }))}
+                    history={getLLMHistoryForRound(currentRound)}
+                    eig_adjusted_sum={getLLMHistoryForRound(currentRound).reduce((acc, item) => acc + item.eig_adjusted, 0)}
                     color="bg-green-500"
                     total={20825}
                   />
@@ -761,16 +801,7 @@ const BattleshipGame = () => {
 };
 
 export default BattleshipGame;
-type Question = {
-  question: string;
-  answer: string;
-  uncertaintyReduction: { percentage: number; };
-};
-type LLMQuestion = {
-  question: string;
-  answer: string;
-  percentage: number;
-};
+
 
 // Add a utility function to calculate eliminated scenarios
 const calculateEliminatedScenarios = (percentage: number, total: number) => {
@@ -778,16 +809,10 @@ const calculateEliminatedScenarios = (percentage: number, total: number) => {
 };
 
 // Constants
-const TOTAL_ROUNDS = 1;
+const TOTAL_ROUNDS = 5;
 const QUESTION_TIME = 30;
 const GRID_SIZE = 6;
-const LLM_QUESTIONS: LLMQuestion[] = [
-  { question: "How many ships are there in the top half of the board?", answer: "1", percentage: 13.7 },
-  { question: "How many tiles are occupied by ships in total?", answer: "6", percentage: 11.5 },
-  { question: "Are there more ships on the odd-numbered rows than the even rows?", answer: "No", percentage: 21.3 },
-  { question: "How many ships are horizontal?", answer: "2", percentage: 15.4 },
-  { question: "Where is the bottom right part of the third ship?", answer: "F5", percentage: 30.2 }
-];
+const LLM_QUESTIONS: LLMQuestion[] = [];
 
 // Helper Components
 const GridLabels = () => (
@@ -837,27 +862,28 @@ const ProgressBar = ({
   color,
   total
 }: {
-  history: { percentage: number; }[];
+  history: { eig_adjusted: number; }[];
+  eig_adjusted_sum: number;
   color: string;
   total: number;
 }) => (
   <div className="space-y-2">
     <div className="flex justify-between text-sm text-gray-600">
-      <span>Scenarios eliminated: {history.reduce((acc, item) =>
-        acc + calculateEliminatedScenarios(item.percentage, total), 0).toLocaleString()}</span>
-      <span>Remaining scenarios: {(total - history.reduce((acc, item) =>
-        acc + calculateEliminatedScenarios(item.percentage, total), 0)).toLocaleString()}</span>
+      <span>Scenarios eliminated: {Math.round(history.reduce((acc, item) =>
+        acc + item.eig_adjusted, 0) * total).toLocaleString()}</span>
+      <span>Remaining scenarios: {((1 - Math.round(history.reduce((acc, item) =>
+        acc + item.eig_adjusted, 0))) * total).toLocaleString()}</span>
     </div>
     <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
       <div className="h-full flex">
         {history.map((item, index) => {
-          const eliminated = calculateEliminatedScenarios(item.percentage, total);
+          const eliminated = calculateEliminatedScenarios(item.eig_adjusted, total);
           return (
             <div
               key={index}
               className={`h-full ${color} transition-all duration-500`}
               style={{
-                width: `${item.percentage}%`,
+                width: `${item.eig_adjusted}%`,
                 borderRight: index < history.length - 1 ? '2px solid rgba(255, 255, 255, 0.5)' : 'none'
               }}
               title={`Eliminated ${eliminated.toLocaleString()} scenarios`}
