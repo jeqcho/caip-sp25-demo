@@ -29,6 +29,9 @@ type BoardType = BoardTile[][];
 type ProgressBarHistory = { eig_adjusted: number; }[];
 type QKey = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Q5';
 
+const positionsEqual = (a: Position, b: Position): boolean =>
+  a.row === b.row && a.col === b.col;
+
 function parseTileLetters(tileString: string): Position[] {
   // Mapping letters to numbers (A becomes 1, B becomes 2, etc.)
   const letterMap = {
@@ -122,7 +125,7 @@ const BattleshipGame = () => {
     const ships_positions: Position[] = []
     for (let row = 0; row < 6; ++row) {
       for (let col = 0; col < 6; ++col) {
-        if (board[row][col] in ["R", "B", "P"]) {
+        if (["R", "B", "P"].includes(board[row][col])) {
           const ship_position = { row: row, col: col };
           ships_positions.push(ship_position);
         }
@@ -154,7 +157,7 @@ const BattleshipGame = () => {
     setLLMGuesses(parseTileLetters(tileChoice));
 
     // store the correct answers
-    const shipsPositions = getShipsPositionsFromBoard(currentBoard);
+    const shipsPositions = getShipsPositionsFromBoard(boards[questionTileChoice.board - 1] as BoardType);
     setShipsPositions(shipsPositions);
 
     setGameState('userQuestion');
@@ -430,39 +433,41 @@ const BattleshipGame = () => {
   );
 
   const showResultChips = (guesses: Position[]) => {
-    {
-      [
-        { row: 1, col: 2 },
-        { row: 1, col: 3 },
-        { row: 3, col: 2 },
-        { row: 4, col: 2 },
-        { row: 4, col: 4 },
-        { row: 4, col: 5 }
-      ].map((guess, index) => {
-        const isCorrect = ships.some(ship => {
-          if (ship.horizontal) {
-            return ship.row === guess.row && guess.col >= ship.col && guess.col < ship.col + ship.length;
-          } else {
-            return ship.col === guess.col && guess.row >= guess.row && guess.row < ship.row + ship.length;
-          }
-        });
-        return (
-          <div key={index} className={`flex items-center gap-1 px-3 py-1 rounded-full ${isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
-            <span>{String.fromCharCode(65 + guess.col)}{guess.row + 1}</span>
-            {isCorrect ? (
-              <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            )}
-          </div>
-        );
-      })
-    }
-  }
+    return (
+      <div className="flex flex-wrap gap-2">
+        {guesses.map((guess, index) => {
+          const isCorrect = ships_positions.some(position => positionsEqual(position, guess));
+          console.log(ships_positions);
+          console.log(guess);
+          console.log(isCorrect);
+          if (!isCorrect) return ''
+          return (
+            <div
+              key={index}
+              className={`flex items-center gap-1 px-3 py-1 rounded-full ${isCorrect ? 'bg-green-100' : ''}`}
+            >
+              <span>{String.fromCharCode(65 + guess.col)}{guess.row + 1}</span>
+              {isCorrect && (
+                <svg
+                  className="w-4 h-4 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderGameControls = () => {
     switch (gameState) {
@@ -685,45 +690,20 @@ const BattleshipGame = () => {
 
         return (
           <div className="space-y-6">
-            {/* <Alert variant="default" className="bg-blue-50">
+            <Alert variant="default" className="bg-blue-50">
               <AlertDescription className="text-lg font-semibold text-blue-800">
-                You found {correctGuesses} out of 6 ship tiles!
+                Here are the results!
               </AlertDescription>
-              <AlertDescription className="text-lg font-semibold text-blue-800">
-                DeepSeek found 5 out of 6 ship tiles!
-              </AlertDescription>
-            </Alert> */}
+            </Alert>
 
-            {/* <div className="bg-white rounded-lg border p-4 space-y-6">
+            <div className="bg-white rounded-lg border p-4 space-y-6">
               <div className="space-y-4">
                 <h4 className="font-medium text-gray-700 flex items-center gap-2">
                   <User className="h-4 w-4" />
                   Your Guesses:
                 </h4>
                 <div className="flex gap-2">
-                  {userGuesses.map((guess, index) => {
-                    const isCorrect = ships.some(ship => {
-                      if (ship.horizontal) {
-                        return ship.row === guess.row && guess.col >= ship.col && guess.col < ship.col + ship.length;
-                      } else {
-                        return ship.col === guess.col && guess.row >= ship.row && guess.row < ship.row + ship.length;
-                      }
-                    });
-                    return (
-                      <div key={index} className={`flex items-center gap-1 px-3 py-1 rounded-full ${isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
-                        <span>{String.fromCharCode(65 + guess.col)}{guess.row + 1}</span>
-                        {isCorrect ? (
-                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                          </svg>
-                        ) : (
-                          <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {showResultChips(userGuesses)}
                 </div>
               </div>
 
@@ -733,80 +713,7 @@ const BattleshipGame = () => {
                   DeepSeek's Guesses:
                 </h4>
                 <div className="flex gap-2">
-                  {[
-                    { row: 1, col: 2 },
-                    { row: 1, col: 3 },
-                    { row: 3, col: 2 },
-                    { row: 4, col: 2 },
-                    { row: 4, col: 4 },
-                    { row: 4, col: 5 }
-                  ].map((guess, index) => {
-                    const isCorrect = ships.some(ship => {
-                      if (ship.horizontal) {
-                        return ship.row === guess.row && guess.col >= ship.col && guess.col < ship.col + ship.length;
-                      } else {
-                        return ship.col === guess.col && guess.row >= guess.row && guess.row < ship.row + ship.length;
-                      }
-                    });
-                    return (
-                      <div key={index} className={`flex items-center gap-1 px-3 py-1 rounded-full ${isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
-                        <span>{String.fromCharCode(65 + guess.col)}{guess.row + 1}</span>
-                        {isCorrect ? (
-                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                          </svg>
-                        ) : (
-                          <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div> */}
-
-            <div className="bg-gray-50 rounded-lg p-4 space-y-6">
-              <div className="space-y-4">
-                <h4 className="font-medium text-gray-700">Question-Answer History</h4>
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    <h5 className="font-medium text-gray-600">Your Progress</h5>
-                  </div>
-                  <div className="ml-6 space-y-3 divide-y divide-gray-200">
-                    {userQuestionHistory.map((item, index) => (
-                      <div key={index} className="pt-3 first:pt-0">
-                        <div className="font-medium text-gray-600">Round {index + 1}:</div>
-                        <div className="mt-1">Q: "{item.question}"</div>
-                        <div className="text-gray-600">A: {item.answer}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-4 mt-8">
-                  <div className="flex items-center gap-2">
-                    <Bot className="h-4 w-4" />
-                    <h5 className="font-medium text-gray-600">DeepSeek's Progress</h5>
-                  </div>
-                  <ProgressBar
-                    history={calculateAdjustedEIGHistoryForRound(currentRound)}
-                    eig_adjusted_sum={calculateAdjustedEIGSumForRound(currentRound)}
-                    color="bg-green-500"
-                    total={TOTAL_SCENARIOS}
-                  />
-                  <div className="ml-6 space-y-3 divide-y divide-gray-200">
-                    {chosenLLMQuestions.map((item, index) => (
-                      <div key={index} className="pt-3 first:pt-0">
-                        <div className="font-medium text-gray-600">Round {index + 1}:</div>
-                        <div className="mt-1">Q: "{item.question}"</div>
-                        <div className="text-gray-600">A: {item.answer}</div>
-                      </div>
-                    ))}
-                  </div>
+                  {showResultChips(llmGuesses)}
                 </div>
               </div>
             </div>
@@ -814,8 +721,73 @@ const BattleshipGame = () => {
             <Button onClick={resetGameState} className="w-full bg-blue-600 hover:bg-blue-700">
               Restart demo
             </Button>
+
           </div>
         );
+    }
+  };
+
+  const renderFinalHistory = () => {
+    switch (gameState) {
+      case "gameOver":
+        return (
+          <div className="space-y-6">
+            <Alert variant="default" className="bg-blue-50">
+              <AlertDescription className="text-lg font-semibold text-blue-800">
+                Here’s a summary of your question and answer history.
+              </AlertDescription>
+            </Alert>
+  
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Left: User Question-Answer History */}
+                <div>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      <h5 className="font-medium text-gray-600">Your Progress</h5>
+                    </div>
+                    <div className="ml-6 space-y-3 divide-y divide-gray-200">
+                      {userQuestionHistory.map((item, index) => (
+                        <div key={index} className="pt-3 first:pt-0">
+                          <div className="font-medium text-gray-600">
+                            Round {index + 1}:
+                          </div>
+                          <div className="mt-1">Q: "{item.question}"</div>
+                          <div className="text-gray-600">A: {item.answer}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+  
+                {/* Right: LLM (DeepSeek) Question-Answer History */}
+                <div>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Bot className="h-4 w-4" />
+                      <h5 className="font-medium text-gray-600">DeepSeek's Progress</h5>
+                    </div>
+                    <div className="ml-6 space-y-3 divide-y divide-gray-200">
+                      {chosenLLMQuestions.map((item, index) => (
+                        <div key={index} className="pt-3 first:pt-0">
+                          <div className="font-medium text-gray-600">
+                            Round {index + 1}:
+                          </div>
+                          <div className="mt-1">Q: "{item.question}"</div>
+                          <div className="text-gray-600">A: {item.answer}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+  
+          </div>
+        );
+      default:
+        return (<div className="pb-8"></div>);
     }
   };
 
@@ -827,7 +799,7 @@ const BattleshipGame = () => {
           <p className="text-gray-500 text-xl mt-2">Can you outmaneuver AI in naval warfare?</p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-16 px-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pb-8 px-16">
             <div className="flex justify-center items-start">
               {renderGameBoard()}
             </div>
@@ -835,8 +807,13 @@ const BattleshipGame = () => {
               {renderGameControls()}
             </div>
           </div>
+          <div className="w-full max-w-6xl mx-auto">
+            {renderFinalHistory()}
+          </div>
         </CardContent>
+
       </Card>
+
     </div>
   );
 };
