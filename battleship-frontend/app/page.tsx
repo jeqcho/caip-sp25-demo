@@ -192,14 +192,15 @@ const BattleshipGame = () => {
     }
   };
 
-  const fetchAnswerFromAPI = async (question: string): Promise<string> => {
+  const fetchAnswerFromAPI = async (question: string, boardId: number): Promise<string> => {
     try {
       const response = await fetch("http://127.0.0.1:5000/api/get-answer", {
         method: "POST",
+        mode: "no-cors",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ question })
+        body: JSON.stringify({ question, boardId})
       });
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -226,7 +227,7 @@ const BattleshipGame = () => {
     };
 
     // Await the API call to get the answer.
-    const answer = await fetchAnswerFromAPI(userQuestion);
+    const answer = await fetchAnswerFromAPI(userQuestion, boardId);
     userResult.answer = answer;
 
     setUserQuestionHistory((prev) => [...prev, userResult]);
