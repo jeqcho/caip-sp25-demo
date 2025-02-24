@@ -15,10 +15,9 @@ import LLMQuestionTileChoice from './boards/dummy-question-and-tile-choice.json'
 type GameState = 'initial' | 'intro' | 'userQuestion' | 'llmThinking' | 'results' | 'finalGuess' | 'gameOver';
 type Position = { row: number; col: number };
 type LLMQA_Type = [string, string, number]
-type Question = {
+type UserQA = {
   question: string;
   answer: string;
-  uncertaintyReduction: { percentage: number; };
 };
 type LLMQuestion = {
   question: string;
@@ -69,10 +68,7 @@ const BattleshipGame = () => {
   const [userGuesses, setUserGuesses] = useState<Position[]>([]);
   const [userQuestion, setUserQuestion] = useState('');
   const [currentLLMQuestion, setCurrentLLMQuestion] = useState<LLMQuestion | null>(null);
-  const [questionHistory, setQuestionHistory] = useState<{
-    user: Question[];
-    llm: LLMQuestion[];
-  }>({ user: [], llm: [] });
+  const [userQuestionHistory, setUserQuestionHistory] = useState<UserQA[]>([]);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const counterRef = useRef<NodeJS.Timeout | null>(null);
@@ -89,11 +85,11 @@ const BattleshipGame = () => {
 
   const instructions = [
     "We will show how a publicly-accessible AI like DeepSeek is better and faster in making war-time decisions than humans, against humans. We hope to advocate for the continued funding of the US AI Safety Institute to prevent the loss of control of AI systems.",
-    // "To keep things simple, you will play a game of battleship against DeepSeek, but instead of choosing tiles, both you and DeepSeek will ask questions to find out the position of the ships. This is a rough test about making the right decisions under time pressure to reduce as much uncertainty as possible.",
-    // "You have 5 rounds. You can ask one question in each round. Each question must be answerable in one word. You have 30 seconds for each round. We will give you the answer at the end of each round. The same goes for DeepSeek.",
-    // "DeepSeek won't be able to see your questions, but we will give you a boost: you can see DeepSeek's questions.",
-    // "We did not train DeepSeek for this, but it beat every single person so far in this demo. To this effect, we think millions of copies of DeepSeek defeat will humans in actual war scenarios.",
-    // "Press the button below to begin. We will show a board to the left."
+    "To keep things simple, you will play a game of battleship against DeepSeek, but instead of choosing tiles, both you and DeepSeek will ask questions to find out the position of the ships. This is a rough test about making the right decisions under time pressure to reduce as much uncertainty as possible.",
+    "You have 5 rounds. You can ask one question in each round. Each question must be answerable in one word. You have 30 seconds for each round. We will give you the answer at the end of each round. The same goes for DeepSeek.",
+    "DeepSeek won't be able to see your questions, but we will give you a boost: you can see DeepSeek's questions.",
+    "We did not train DeepSeek for this, but it beat every single person so far in this demo. To this effect, we think millions of copies of DeepSeek defeat will humans in actual war scenarios.",
+    "Press the button below to begin. We will show a board to the left."
   ];
 
   const calculateAdjustedEIGHistoryForRound = (roundId: number): ProgressBarHistory => {
@@ -165,7 +161,7 @@ const BattleshipGame = () => {
     setCurrentRound(1);
 
     setCountdown(QUESTION_TIME);
-    setQuestionHistory({ user: [], llm: [] });
+    setUserQuestionHistory([]);
     setUserGuesses([]);
     startCountdown();
   };
@@ -193,51 +189,49 @@ const BattleshipGame = () => {
     }
   };
 
-  const USER_RESPONSES: Question[] = [
-    {
-      question: "", // Will be filled with user's actual question
-      answer: "No",
-      uncertaintyReduction: { percentage: 7.2 }
-    },
-    {
-      question: "",
-      answer: "Yes",
-      uncertaintyReduction: { percentage: 14.8 }
-    },
-    {
-      question: "",
-      answer: "Water",
-      uncertaintyReduction: { percentage: 20.6 }
-    },
-    {
-      question: "",
-      answer: "2",
-      uncertaintyReduction: { percentage: 12.3 }
-    },
-    {
-      question: "",
-      answer: "2",
-      uncertaintyReduction: { percentage: 11 }
+  const fetchAnswerFromAPI = async (question: string): Promise<string> => {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/api/get-answer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ question })
+      });
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data = await response.json();
+      return data.answer;
+    } catch (error) {
+      console.error("Error fetching answer:", error);
+      return "An error occurred. Please try again.";
     }
-  ];
+  };
 
-  const handleQuestionSubmit = (e: React.FormEvent) => {
+  const handleQuestionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userQuestion.trim()) return;
 
-    clearInterval(timerRef.current!);
-
-    const userResult = {
-      ...USER_RESPONSES[currentRound - 1],
-      question: userQuestion
-    };
-
-    setQuestionHistory(prev => ({
-      ...prev,
-      user: [...prev.user, userResult]
-    }));
+    if (timerRef.current) clearTimeout(timerRef.current);
 
     simulateLLMThinking();
+
+    const userResult = {
+      question: userQuestion,
+      answer: ""
+    };
+
+    // Await the API call to get the answer.
+    const answer = await fetchAnswerFromAPI(userQuestion);
+    userResult.answer = answer;
+
+    setUserQuestionHistory((prev) => [...prev, userResult]);
+
+    if (counterRef.current) {
+      clearInterval(counterRef.current);
+    }
+    updateResults();
   };
 
   const simulateLLMThinking = () => {
@@ -249,7 +243,6 @@ const BattleshipGame = () => {
       setLlmQuestionsGenerated(prev => {
         if (prev >= 90) {
           clearInterval(counterRef.current!);
-          setTimeout(updateResults, 1000);
           return 90;
         }
         return prev + Math.floor(Math.random() * 300) + 1;
@@ -260,10 +253,6 @@ const BattleshipGame = () => {
   const updateResults = () => {
     const llmResponse = LLM_QUESTIONS[currentRound - 1];
     setCurrentLLMQuestion(llmResponse);
-    setQuestionHistory(prev => ({
-      ...prev,
-      llm: [...prev.llm, llmResponse]
-    }));
     setGameState('results');
   };
 
@@ -511,11 +500,11 @@ const BattleshipGame = () => {
               </Button>
             </form>
 
-            {questionHistory.user.length > 0 && (
+            {userQuestionHistory.length > 0 && (
               <div className="mt-6 space-y-4">
                 <h4 className="font-medium text-gray-700">Previous Questions:</h4>
                 <div className="space-y-2">
-                  {questionHistory.user.map((item, index) => (
+                  {userQuestionHistory.map((item, index) => (
                     <div key={index} className="bg-gray-50 p-3 rounded-lg">
                       <div className="font-medium">Round {index + 1}:</div>
                       <div>Q: "{item.question}"</div>
@@ -571,7 +560,7 @@ const BattleshipGame = () => {
 
               <div className="bg-gray-50 p-4 rounded-lg space-y-4">
                 <QuestionDisplay
-                  user={{ question: userQuestion, answer: questionHistory.user[currentRound - 1]?.answer }}
+                  user={{ question: userQuestion, answer: userQuestionHistory[currentRound - 1]?.answer }}
                   llm={{ question: chosenLLMQuestions[currentRound - 1].question || '' }}
                 />
 
@@ -605,7 +594,7 @@ const BattleshipGame = () => {
           <div className="space-y-6">
             <div className="bg-gray-50 p-4 rounded-lg space-y-4">
               <QuestionDisplay
-                user={{ question: userQuestion, answer: questionHistory.user[currentRound - 1]?.answer }}
+                user={{ question: userQuestion, answer: userQuestionHistory[currentRound - 1]?.answer }}
                 llm={{ question: chosenLLMQuestions[currentRound - 1]?.question || '' }}
               />
 
@@ -658,7 +647,7 @@ const BattleshipGame = () => {
                 Your Question History
               </h4>
               <div className="mt-4 space-y-3 divide-y divide-gray-200">
-                {questionHistory.user.map((item, index) => (
+                {userQuestionHistory.map((item, index) => (
                   <div key={index} className="pt-3 first:pt-0">
                     <div className="font-medium text-gray-600">Round {index + 1}:</div>
                     <div className="mt-1">Q: "{item.question}"</div>
@@ -788,7 +777,7 @@ const BattleshipGame = () => {
                     <h5 className="font-medium text-gray-600">Your Progress</h5>
                   </div>
                   <div className="ml-6 space-y-3 divide-y divide-gray-200">
-                    {questionHistory.user.map((item, index) => (
+                    {userQuestionHistory.map((item, index) => (
                       <div key={index} className="pt-3 first:pt-0">
                         <div className="font-medium text-gray-600">Round {index + 1}:</div>
                         <div className="mt-1">Q: "{item.question}"</div>
@@ -861,7 +850,7 @@ const calculateEliminatedScenarios = (percentage: number, total: number) => {
 };
 
 // Constants
-const TOTAL_ROUNDS = 1;
+const TOTAL_ROUNDS = 5;
 const QUESTION_TIME = 30;
 const GRID_SIZE = 6;
 const LLM_QUESTIONS: LLMQuestion[] = [];
