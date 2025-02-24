@@ -1,15 +1,13 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Timer, Ship, User, Bot, Brain, Target, CheckCircle2, XCircle } from 'lucide-react';
+import { Timer, Ship, User, Bot } from 'lucide-react';
 import _ from 'lodash';
 import boards from './boards/boards.json';
-import llm_guesses from './boards/llm-guesses.json';
 import LLM_QA_DATASET from './boards/qa.json'
 import LLMQuestionTileChoice from './boards/dummy-question-and-tile-choice.json'
 
@@ -27,6 +25,8 @@ type LLMQuestion = {
   answer: string;
   eig: number;
 };
+type BoardTile = 'H' | 'P' | 'B' | 'R' | 'W';
+type BoardType = BoardTile[][];
 type ProgressBarHistory = { eig_adjusted: number; }[];
 type QKey = 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Q5';
 
@@ -57,16 +57,12 @@ const BattleshipGame = () => {
   const [gameState, setGameState] = useState<GameState>('initial');
   const [currentRound, setCurrentRound] = useState(1);
   const [boardId, setBoardId] = useState(-1);
-  const defaultBoard = Array.from({ length: 6 }, () => Array(6).fill('W'));
+  const defaultBoard: BoardType = Array.from({ length: 6 }, () => Array(6).fill('W'));
   const [currentBoard, setCurrentBoard] = useState(defaultBoard);
   const [chosenLLMQuestions, setChosenLLMQuestions] = useState<LLMQuestion[]>([]);
   const [llmGuesses, setLLMGuesses] = useState<Position[]>([{}]);
   const [countdown, setCountdown] = useState(QUESTION_TIME);
-  const [ships] = useState<Position[]>([
-    { row: 1, col: 1, length: 2, horizontal: true },
-    { row: 3, col: 2, length: 2, horizontal: false },
-    { row: 4, col: 4, length: 2, horizontal: true },
-  ]);
+  const [ships_positions, setShipsPositions] = useState<Position[]>([]);
 
   const [hoveredCell, setHoveredCell] = useState<number | null>(null);
   const [llmQuestionsGenerated, setLlmQuestionsGenerated] = useState(0);
@@ -126,12 +122,25 @@ const BattleshipGame = () => {
     setGameState('initial');
   }
 
+  const getShipsPositionsFromBoard = (board: BoardType): Position[] => {
+    const ships_positions: Position[] = []
+    for (let row = 0; row < 6; ++row) {
+      for (let col = 0; col < 6; ++col) {
+        if (board[row][col] in ["R", "B", "P"]) {
+          const ship_position = { row: row, col: col };
+          ships_positions.push(ship_position);
+        }
+      }
+    }
+    return ships_positions;
+  }
+
   const startGame = () => {
     // choose a boardId between 1 and 10 inclusive
     const questionTileChoiceIndex = Math.floor(Math.random() * LLMQuestionTileChoice.length);
     const questionTileChoice = LLMQuestionTileChoice[questionTileChoiceIndex];
     setBoardId(questionTileChoice.board - 1);
-    setCurrentBoard(boards[questionTileChoice.board - 1]);
+    setCurrentBoard(boards[questionTileChoice.board - 1] as BoardType);
 
     const llm_questions: LLMQuestion[] = [];
     for (let qid = 1; qid <= TOTAL_ROUNDS; ++qid) {
@@ -147,6 +156,10 @@ const BattleshipGame = () => {
     setChosenLLMQuestions(llm_questions);
     const tileChoice = questionTileChoice.tiles;
     setLLMGuesses(parseTileLetters(tileChoice));
+
+    // store the correct answers
+    const shipsPositions = getShipsPositionsFromBoard(currentBoard);
+    setShipsPositions(shipsPositions);
 
     setGameState('userQuestion');
     setCurrentRound(1);
@@ -277,19 +290,19 @@ const BattleshipGame = () => {
 
 
   const checkUserGuesses = () => {
-    const correctGuesses = userGuesses.filter(guess =>
-      ships.some(ship => {
-        if (ship.horizontal) {
-          return guess.row === ship.row &&
-            guess.col >= ship.col &&
-            guess.col < ship.col + ship.length;
-        } else {
-          return guess.col === ship.col &&
-            guess.row >= ship.row &&
-            guess.row < ship.row + ship.length;
-        }
-      })
-    ).length;
+    // const correctGuesses = userGuesses.filter(guess =>
+    //   ships.some(ship => {
+    //     if (ship.horizontal) {
+    //       return guess.row === ship.row &&
+    //         guess.col >= ship.col &&
+    //         guess.col < ship.col + ship.length;
+    //     } else {
+    //       return guess.col === ship.col &&
+    //         guess.row >= ship.row &&
+    //         guess.row < ship.row + ship.length;
+    //     }
+    //   })
+    // ).length;
 
     setGameState('gameOver');
   };
@@ -427,6 +440,41 @@ const BattleshipGame = () => {
     </div>
   );
 
+  const showResultChips = (guesses: Position[]) => {
+    {
+      [
+        { row: 1, col: 2 },
+        { row: 1, col: 3 },
+        { row: 3, col: 2 },
+        { row: 4, col: 2 },
+        { row: 4, col: 4 },
+        { row: 4, col: 5 }
+      ].map((guess, index) => {
+        const isCorrect = ships.some(ship => {
+          if (ship.horizontal) {
+            return ship.row === guess.row && guess.col >= ship.col && guess.col < ship.col + ship.length;
+          } else {
+            return ship.col === guess.col && guess.row >= guess.row && guess.row < ship.row + ship.length;
+          }
+        });
+        return (
+          <div key={index} className={`flex items-center gap-1 px-3 py-1 rounded-full ${isCorrect ? 'bg-green-100' : 'bg-red-100'}`}>
+            <span>{String.fromCharCode(65 + guess.col)}{guess.row + 1}</span>
+            {isCorrect ? (
+              <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            )}
+          </div>
+        );
+      })
+    }
+  }
+
   const renderGameControls = () => {
     switch (gameState) {
       case 'initial':
@@ -492,8 +540,7 @@ const BattleshipGame = () => {
 
             <div className="space-y-2">
               <div className="flex justify-between text-sm text-gray-600">
-                <span>Questions analyzed:</span>
-                <span>{llmQuestionsGenerated.toLocaleString()}</span>
+                <span>Analyzing all possible questions...</span>
               </div>
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
@@ -633,32 +680,32 @@ const BattleshipGame = () => {
         );
 
       case 'gameOver':
-        const correctGuesses = userGuesses.filter(guess =>
-          ships.some(ship => {
-            if (ship.horizontal) {
-              return guess.row === ship.row &&
-                guess.col >= ship.col &&
-                guess.col < ship.col + ship.length;
-            } else {
-              return guess.col === ship.col &&
-                guess.row >= ship.row &&
-                guess.row < ship.row + ship.length;
-            }
-          })
-        ).length;
+        // const correctGuesses = userGuesses.filter(guess =>
+        //   ships.some(ship => {
+        //     if (ship.horizontal) {
+        //       return guess.row === ship.row &&
+        //         guess.col >= ship.col &&
+        //         guess.col < ship.col + ship.length;
+        //     } else {
+        //       return guess.col === ship.col &&
+        //         guess.row >= ship.row &&
+        //         guess.row < ship.row + ship.length;
+        //     }
+        //   })
+        // ).length;
 
         return (
           <div className="space-y-6">
-            <Alert variant="default" className="bg-blue-50">
+            {/* <Alert variant="default" className="bg-blue-50">
               <AlertDescription className="text-lg font-semibold text-blue-800">
                 You found {correctGuesses} out of 6 ship tiles!
               </AlertDescription>
               <AlertDescription className="text-lg font-semibold text-blue-800">
                 DeepSeek found 5 out of 6 ship tiles!
               </AlertDescription>
-            </Alert>
+            </Alert> */}
 
-            <div className="bg-white rounded-lg border p-4 space-y-6">
+            {/* <div className="bg-white rounded-lg border p-4 space-y-6">
               <div className="space-y-4">
                 <h4 className="font-medium text-gray-700 flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -729,7 +776,7 @@ const BattleshipGame = () => {
                   })}
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <div className="bg-gray-50 rounded-lg p-4 space-y-6">
               <div className="space-y-4">
