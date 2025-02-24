@@ -87,16 +87,16 @@ const BattleshipGame = () => {
   const [currentInstructionIndex, setCurrentInstructionIndex] = useState(0);
 
   const instructions = [
-    "We will show how a publicly-accessible AI like DeepSeek is better and faster in making war-time decisions than humans, against humans. We hope to advocate for the continued funding of the US AI Safety Institute to prevent the loss of control of AI systems.",
-    "To keep things simple, you will play a game of battleship against DeepSeek, but instead of choosing tiles, both you and DeepSeek will ask questions to find out the position of the ships. This is a rough test about making the right decisions under time pressure to reduce as much uncertainty as possible.",
-    "You have 5 rounds. You can ask one question in each round. Each question must be answerable in one word. You have 30 seconds for each round. We will give you the answer at the end of each round. The same goes for DeepSeek.",
-    "DeepSeek won't be able to see your questions, but we will give you a boost: you can see DeepSeek's questions.",
-    "We did not train DeepSeek for this, but it beat every single person so far in this demo. To this effect, we think millions of copies of DeepSeek defeat will humans in actual war scenarios.",
+    "We will show how a publicly-accessible AI like ChatGPT is better and faster in making war-time decisions than humans, against humans. We hope to advocate for the continued funding of the US AI Safety Institute to prevent the loss of control of AI systems.",
+    "To keep things simple, you will play a game of battleship against ChatGPT, but instead of choosing tiles, both you and ChatGPT will ask questions to find out the position of the ships. This is a rough test about making the right decisions under time pressure to reduce as much uncertainty as possible.",
+    "You have 5 rounds. You can ask one question in each round. Each question must be answerable in one word. You have 30 seconds for each round. We will give you the answer at the end of each round. The same goes for ChatGPT.",
+    "ChatGPT won't be able to see your questions, but we will give you a boost: you can see ChatGPT's questions.",
+    "We did not train ChatGPT for this, but it beat every single person so far in this demo. To this effect, we think millions of copies of ChatGPT defeat will humans in actual war scenarios.",
     "Press the button below to begin. We will show a board to the left."
   ];
 
   const calculateAdjustedEIGHistoryForRound = (roundId: number): ProgressBarHistory => {
-    const adjusted_eigs = [];
+    const adjusted_eigs = [];   
     var cum_eig: number = 0;
     for (const question of chosenLLMQuestions.slice(0, roundId)) {
       const adjusted_eig = (100 - cum_eig) * question.eig / 100;
@@ -528,7 +528,7 @@ const BattleshipGame = () => {
             <Alert className="bg-blue-50">
               <div className="flex items-center gap-2">
                 <Bot className="h-4 w-4" />
-                <AlertDescription>DeepSeek is analyzing possible questions...</AlertDescription>
+                <AlertDescription>ChatGPT is analyzing possible questions...</AlertDescription>
               </div>
             </Alert>
 
@@ -573,7 +573,7 @@ const BattleshipGame = () => {
                   <div className="space-y-2">
                     <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
                       <Bot className="h-4 w-4" />
-                      DeepSeek's Information Gained
+                      ChatGPT's Information Gained
                     </h4>
                     <ProgressBar
                       history={calculateAdjustedEIGHistoryForRound(currentRound)}
@@ -608,7 +608,7 @@ const BattleshipGame = () => {
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-gray-600 flex items-center gap-2">
                     <Bot className="h-4 w-4" />
-                    DeepSeek has reduced their uncertainty by:
+                    ChatGPT has reduced their uncertainty by:
                   </h4>
                   <ProgressBar
                     history={calculateAdjustedEIGHistoryForRound(currentRound)}
@@ -710,7 +710,7 @@ const BattleshipGame = () => {
               <div className="space-y-4">
                 <h4 className="font-medium text-gray-700 flex items-center gap-2">
                   <Bot className="h-4 w-4" />
-                  DeepSeek's Guesses:
+                  ChatGPT's Guesses:
                 </h4>
                 <div className="flex gap-2">
                   {showResultChips(llmGuesses)}
@@ -761,12 +761,12 @@ const BattleshipGame = () => {
                   </div>
                 </div>
   
-                {/* Right: LLM (DeepSeek) Question-Answer History */}
+                {/* Right: LLM (ChatGPT) Question-Answer History */}
                 <div>
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <Bot className="h-4 w-4" />
-                      <h5 className="font-medium text-gray-600">DeepSeek's Progress</h5>
+                      <h5 className="font-medium text-gray-600">ChatGPT's Progress</h5>
                     </div>
                     <div className="ml-6 space-y-3 divide-y divide-gray-200">
                       {chosenLLMQuestions.map((item, index) => (
@@ -795,7 +795,7 @@ const BattleshipGame = () => {
     <div className="flex items-center justify-center w-full min-h-screen bg-gray-50 p-6">
       <Card className="w-full max-w-6xl mx-auto">
         <CardHeader className="text-center pb-16">
-          <CardTitle className="text-3xl font-bold">You vs DeepSeek</CardTitle>
+          <CardTitle className="text-3xl font-bold">You vs ChatGPT</CardTitle>
           <p className="text-gray-500 text-xl mt-2">Can you outmaneuver AI in naval warfare?</p>
         </CardHeader>
         <CardContent>
@@ -870,7 +870,7 @@ const QuestionDisplay = ({
     <Alert className="flex flex-col gap-2">
       <div className="flex items-center gap-2 w-full">
         <Bot className="h-4 w-4" />
-        <AlertDescription className="flex-1">DeepSeek's question: "{llm.question}"</AlertDescription>
+        <AlertDescription className="flex-1">ChatGPT's question: "{llm.question}"</AlertDescription>
       </div>
     </Alert>
   </div>
